@@ -1,0 +1,22 @@
+[package]
+name = "mdr"
+version = "1.0.0"
+edition = "2021"
+description = "A modern markdown renderer for the terminal with built-in pager and HTTP server"
+authors = ["titor"]
+license = "MIT"
+repository = "https://github.com/titor/mdr"
+
+[[bin]]
+name = "mdr"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+comrak = "0.33"
+ratatui = { version = "0.29", features = ["crossterm"] }
+crossterm = "0.28"
+syntect = { version = "5", default-features = false, features = ["default-onig"] }
+anyhow = "1"
+walkdir = "2"
+unicode-width = "0.2"
