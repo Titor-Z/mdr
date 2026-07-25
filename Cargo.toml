@@ -1,8 +1,8 @@
 [package]
 name = "mdr"
-version = "1.0.0"
+version = "0.1.0"
 edition = "2021"
-description = "A modern markdown renderer for the terminal with built-in pager and HTTP server"
+description = "一个现代化的终端 Markdown 渲染器，内置 pager 和 HTTP 服务器"
 authors = ["titor"]
 license = "MIT"
 repository = "https://github.com/titor/mdr"

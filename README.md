@@ -1,26 +1,26 @@
 # mdr — Markdown Renderer
 
-> A modern, self-contained terminal Markdown renderer with a built-in pager.
-> No `less`, no `more`, no external dependencies.
+> 一个现代化的、自包含的终端 Markdown 渲染器，内置 pager。
+> 不需要 `less`，不需要 `more`，不依赖任何外部命令。
 
-![demo](https://img.shields.io/badge/Rust-1.94%2B-orange)
+![Rust](https://img.shields.io/badge/Rust-1.94%2B-orange)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
-## Features
+## 功能
 
-### Terminal Viewer
+### 终端阅读器
 
-- **Markdown rendering** — headings, paragraphs, code blocks (with syntax highlighting), lists, tables, task lists (☐/☑), blockquotes, horizontal rules, bold/italic/strikethrough, inline code, links, images
-- **Built-in pager** — scroll with `↑↓`/`jk`, page with `PgUp`/`PgDn`/`b`/`f`, half-page with `u`/`d`
-- **Search** — `/` to search, `n`/`N` to jump between matches
-- **Help drawer** — `?` to toggle keyboard shortcuts panel
-- **Line numbers** — `-l` or `L` to toggle
-- **Mouse support** — scroll wheel, click & drag scrollbar, `Ctrl+m` to toggle mouse capture for text selection
-- **Ctrl+click** — hold `Ctrl` and click on a link to open in browser
+- **Markdown 渲染** — 标题、段落、代码块（语法高亮）、列表、表格、任务列表（☐/☑）、引用块、分割线、粗体/斜体/删除线、行内代码、链接、图片
+- **内置 Pager** — `↑↓`/`jk` 滚动，`PgUp`/`PgDn`/`b`/`f` 翻页，`u`/`d` 半页
+- **搜索** — `/` 搜索，`n`/`N` 跳转匹配
+- **帮助抽屉** — `?` 展开/关闭快捷键面板
+- **行号** — `-l` 或 `L` 切换
+- **鼠标支持** — 滚轮滚动、点击拖拽滚动条、`Ctrl+m` 切换鼠标捕获用于文字选择
+- **Ctrl+点击** — 按住 `Ctrl` 点击链接，在浏览器中打开
 
-### File Picker (Home Screen)
+### 文件选择器（首页）
 
 ```
   ████████ MDR ████████
@@ -32,16 +32,16 @@
 
     notes/git命令集合.md
     17 3月 2026  18:52
-  
+
   FIND: query  ·  → open  ·  ← back  ·  q quit
 ```
 
-- Real-time search filtering
-- Card-style layout with modification time
-- Pagination (`PgUp`/`PgDn`, `gg`/`GG`)
-- Chinese date format
+- 实时搜索过滤
+- 卡片式布局，显示修改时间
+- 翻页（`PgUp`/`PgDn`，`gg`/`GG`）
+- 中文日期格式
 
-### Tables
+### 表格
 
 ```
 ┌──────────┬──────────────────────────────────┬──────────┐
@@ -54,16 +54,16 @@
 └──────────┴──────────────────────────────────┴──────────┘
 ```
 
-- Full grid borders (`┌─┬─┐│├─┼─┤└─┴─┘`)
-- Auto column width distribution
-- Word wrapping with vertical centering
-- Multi-byte character support (CJK)
+- 完整四周边框（`┌─┬─┐│├─┼─┤└─┴─┘`）
+- 列宽自动分配，填满视窗
+- 自动换行 + 垂直居中
+- 多字节字符支持（中日韩）
 
 ---
 
-## Installation
+## 安装
 
-### From source
+### 从源码编译
 
 ```bash
 git clone https://github.com/titor/mdr.git
@@ -72,78 +72,79 @@ cargo build --release
 cp target/release/mdr /usr/local/bin/
 ```
 
-### Requirements
+### 系统要求
 
 - Rust 1.73+
-- A terminal with true color support (for syntax highlighting)
+- 支持真彩色（true color）的终端（用于语法高亮）
 
 ---
 
-## Usage
+## 使用
 
 ```bash
-# Open a file directly
+# 直接打开文件
 mdr README.md
 
-# Open file picker (browse current directory)
+# 打开文件选择器（浏览当前目录）
 mdr
 
-# Show line numbers
+# 显示行号
 mdr -l README.md
 
-# HTTP server (coming soon)
+# HTTP 服务器（即将推出）
 mdr serve --port 8080
 ```
 
-### Key Bindings
+### 快捷键
 
-| Key | Action |
-|-----|--------|
-| `↑`/`k` | Scroll up |
-| `↓`/`j` | Scroll down |
-| `PgUp`/`b` | Page up |
-| `PgDn`/`f` | Page down |
-| `u`/`d` | Half page up/down |
-| `g`/`G` | Top/bottom |
-| `/` | Search |
-| `n`/`N` | Next/previous match |
-| `?` | Toggle help drawer |
-| `L` | Toggle line numbers |
-| `Ctrl+m` | Toggle mouse capture |
-| `Ctrl+click` | Open link in browser |
-| `q`/`Esc` | Quit / go back |
-
----
-
-## Comparison with glow
-
-| Feature | glow | mdr |
-|---------|------|-----|
-| Language | Go | Rust |
-| External pager | Requires `less`/`more` | Built-in ratatui pager |
-| Mouse support | ❌ | ✅ Scroll, click, drag |
-| Table rendering | Plain text | ✅ Grid borders + wrapping |
-| File picker | Simple list | Card layout + pagination |
-| Binary size | ~15 MB | ~5 MB (release) |
+| 按键 | 功能 |
+|------|------|
+| `↑`/`k` | 上滚一行 |
+| `↓`/`j` | 下滚一行 |
+| `PgUp`/`b` | 上一页 |
+| `PgDn`/`f` | 下一页 |
+| `u`/`d` | 半页上/下 |
+| `g`/`G` | 顶部/底部 |
+| `/` | 搜索 |
+| `n`/`N` | 下一个/上一个匹配 |
+| `?` | 切换帮助抽屉 |
+| `L` | 切换行号 |
+| `Ctrl+m` | 切换鼠标捕获 |
+| `Ctrl+点击` | 在浏览器中打开链接 |
+| `q`/`Esc` | 退出 / 返回 |
 
 ---
 
-## Project Status
+## 与 glow 对比
 
-**Current version**: v0.2.0
-
-- ✅ Markdown rendering with syntax highlighting
-- ✅ Built-in TUI pager
-- ✅ File picker with search and pagination
-- ✅ Table rendering with borders and wrapping
-- ✅ Paragraph word wrapping
-- ✅ Mouse interaction
-- ✅ Search with match highlighting
-- 🚧 HTTP server (`mdr serve`) — in development
-- 📝 Config file support — planned
+| 特性 | glow | mdr |
+|------|------|-----|
+| 语言 | Go | Rust |
+| 外部 pager | 依赖 `less`/`more` | 内置 ratatui pager |
+| 鼠标支持 | ❌ | ✅ 滚轮、点击、拖拽 |
+| 表格渲染 | 纯文本 | ✅ 四周边框 + 自动换行 |
+| 文件选择器 | 简单列表 | 卡片布局 + 翻页 |
+| 二进制体积 | ~15 MB | ~5 MB (release) |
 
 ---
 
-## License
+## 项目状态
+
+**当前版本**: v0.1.0
+
+- ✅ Markdown 渲染，含语法高亮
+- ✅ 内置 TUI pager
+- ✅ 文件选择器，含搜索和翻页
+- ✅ 表格渲染，含边框和自动换行
+- ✅ 段落自动换行
+- ✅ 任务列表（☐/☑）
+- ✅ 鼠标交互
+- ✅ 搜索匹配高亮
+- 🚧 HTTP 服务器（`mdr serve`）— 开发中
+- 📝 配置文件支持 — 计划中
+
+---
+
+## 开源协议
 
 MIT
