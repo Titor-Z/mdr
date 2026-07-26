@@ -106,7 +106,7 @@ fn wrap_code_blocks(html: &str) -> String {
 
         // Extract language from <code class="language-xxx">
         let lang = if let Some(cs) = block.find("class=\"language-") {
-            let after = &block[cs + 17..];
+            let after = &block[cs + 16..];
             if let Some(ce) = after.find('"') {
                 Some(&after[..ce])
             } else {

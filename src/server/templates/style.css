@@ -701,6 +701,9 @@ main {
   line-height: inherit;
   font-family: var(--vp-font-family-mono);
   color: var(--vp-c-text-2);
+  display: block;
+  min-width: 100%;
+  width: fit-content;
 }
 
 /* VitePress 风格代码块容器 */
