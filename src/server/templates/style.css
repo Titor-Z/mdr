@@ -697,18 +697,17 @@ main {
   border-radius: 0 0 8px 8px;
 }
 
-/* Shiki 双主题代码高亮 — 亮色默认使用 --shiki-light */
+/* Shiki 双主题代码高亮 */
 .content pre.shiki {
-  background: #ffffff;
+  background: var(--vp-c-bg-soft);
 }
 
 .content pre.shiki code span {
   color: var(--shiki-light);
 }
 
-/* 暗色模式使用 --shiki-dark */
 .dark .content pre.shiki {
-  background: #1b2b34;
+  background: var(--vp-c-bg-soft);
 }
 
 .dark .content pre.shiki code span {
