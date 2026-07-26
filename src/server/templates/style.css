@@ -408,30 +408,29 @@ main {
 /* --- 窄屏：折叠栏 --- */
 .page-nav {
   position: relative;
-  display: inline-block;
-  margin: 16px 0 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  padding: 10px 0;
+  margin: 0 0 24px;
 }
 
 .page-nav-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
+  gap: 4px;
+  padding: 0;
+  background: none;
+  border: none;
   cursor: pointer;
   user-select: none;
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
   color: var(--vp-c-text-2);
-  transition: all 0.25s;
+  transition: color 0.25s;
 }
 
 .page-nav-btn:hover {
   color: var(--vp-c-brand-1);
-  border-color: var(--vp-c-brand-1);
 }
 
 .page-nav-chevron {
