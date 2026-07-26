@@ -116,7 +116,7 @@ fn wrap_code_blocks(html: &str) -> String {
             None
         };
 
-        let lang_label = lang.unwrap_or("");
+        let lang_label = lang.unwrap_or("text");
 
         // Remove inline style from <pre> (syntect adds background-color)
         let block_clean = block.replace(" style=\"background-color:#002b36;\"", "");
