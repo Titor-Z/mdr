@@ -118,12 +118,15 @@ fn wrap_code_blocks(html: &str) -> String {
 
         let lang_label = lang.unwrap_or("");
 
+        // Remove inline style from <pre> (syntect adds background-color)
+        let block_clean = block.replace(" style=\"background-color:#002b36;\"", "");
+
         // VitePress wrapper structure
         out.push_str(&format!(
             r##"<div class="vp-code-block-title"><div class="vp-code-block-title-bar"><span class="vp-code-block-title-text"></span></div><div class="language-{}"><button class="copy" title="复制代码"></button><span class="lang">{}</span>"##,
             lang_label, lang_label
         ));
-        out.push_str(block);
+        out.push_str(&block_clean);
         out.push_str("</div></div>");
     }
 

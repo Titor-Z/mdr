@@ -679,6 +679,7 @@ main {
   font-size: 13px;
   line-height: 1.6;
   border-radius: 0 0 8px 8px;
+  background: var(--vp-c-bg-soft);
 }
 
 .content pre code {
