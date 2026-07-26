@@ -93,6 +93,7 @@ fn preprocess_code_groups(content: &str) -> String {
                 other => other,
             };
 
+            // 即使纯文本也用 span 包装，保证字体/间距一致
             let highlighted_code = if let Some(syn) = ss.find_syntax_by_token(lang_token) {
                 use syntect::easy::HighlightLines;
                 use syntect::html::append_highlighted_html_for_styled_line;
@@ -111,7 +112,7 @@ fn preprocess_code_groups(content: &str) -> String {
                 }
                 output
             } else {
-                esc_html(code)
+                format!("<span style=\"color:#657b83;\">{}</span>", esc_html(code))
             };
 
             blocks_html.push_str(&format!(
