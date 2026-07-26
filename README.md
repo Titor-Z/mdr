@@ -1,4 +1,4 @@
-# mdr — Markdown Renderer
+# MDR — Markdown 终端查看器
 
 > 一个现代化的、自包含的终端 Markdown 渲染器，内置 pager + HTTP 服务器。
 > 不需要 `less`，不需要 `more`，不依赖任何外部命令。
@@ -119,7 +119,7 @@ mdr -l README.md
 mdr serve --port 8080
 mdr serve --port 8080 --dir ./docs
 
-# 开发模式（模板从文件系统加载，改完重启即可）
+# 开发模式（文件监听 + 浏览器自动刷新）
 MDR_DEV=1 mdr serve --port 8080
 ```
 
@@ -173,7 +173,8 @@ MDR_DEV=1 mdr serve --port 8080
 - ✅ 自定义容器（info/tip/warning/danger/details）
 - ✅ 页面导航（On This Page）
 - ✅ 响应式布局
-- 🚧 SSE 热重载 — 开发中
+- ✅ SSE 热重载（`MDR_DEV=1` 文件监听自动刷新）
+- 🚧 双主题代码高亮 — 开发中
 - 📝 配置文件支持 — 计划中
 
 ---

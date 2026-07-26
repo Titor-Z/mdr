@@ -9,7 +9,7 @@
 
 ### v0.2.0 (2026-07-26)
 
-**HTTP 服务器 + 表格渲染 + 段落换行 + 任务列表**
+**HTTP 服务器 + SSE 热重载 + 表格渲染 + 段落换行 + 任务列表 + VitePress 风格**
 
 #### 新增
 - HTTP 服务器模式（`mdr serve --port 8080`）：
@@ -43,6 +43,11 @@
 - 字体尺寸对齐 VitePress（h1: 28-32px, 正文: 16px, code: 0.875em）
 
 **交互和体验**
+- SSE 热重载：`MDR_DEV=1` 时文件监听 + 浏览器自动刷新
+  - notify 文件监听 + broadcast 广播通道
+  - `/events` SSE 端点（15s keep-alive）
+  - JS EventSource 连接，收到 reload 自动刷新页面
+  - 500ms 去抖，避免频繁刷新
 - 鼠标框选文字（Shift+click 绕过鼠标捕获）
 - Ctrl+点击打开链接（检测行内 URL，调用系统浏览器）
 - 鼠标捕获开关（`Ctrl+m` 切换）
@@ -124,12 +129,13 @@
 | 代码组 | 标签页切换 `::: code-group` | P1 |
 | 自定义容器 | info/tip/warning/danger/details 等 | P1 |
 | 字体对齐 VitePress | h1:28-32px, 正文:16px, code:0.875em | P2 |
+| SSE 热重载 | MDR_DEV=1 文件监听 + 浏览器自动刷新 | P2 |
 
 ### ❌ 未完成
 
 | 功能 | 说明 | 优先级 |
 |------|------|--------|
-| SSE 热重载 | 文件监听 + 自动刷新浏览器 | P2 |
+| 双主题代码高亮 | Shiki 风格 --shiki-light/--shiki-dark | P2 |
 | 配置文件 | `~/.config/mdr/config.toml` | P3 |
 | 双主题代码高亮 | Shiki 风格 --shiki-light/--shiki-dark | P2 |
 | 脚注 / 定义列表 | 额外 Markdown 语法 | P3 |
@@ -506,4 +512,4 @@ impl App {
 ---
 
 > 上次更新: 2026-07-26
-> 下一版本计划: v0.3.0 — SSE 热重载 + 双主题代码高亮
+> 下一版本计划: v0.3.0 — 双主题代码高亮 + 配置文件

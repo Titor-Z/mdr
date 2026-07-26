@@ -292,6 +292,11 @@ main {
 
 .card:hover {
   border-color: var(--vp-c-brand-1);
+  cursor: pointer;
+}
+
+.card:hover .card-bar {
+    background: var(--vp-c-brand-1);
 }
 
 .card:last-child {
