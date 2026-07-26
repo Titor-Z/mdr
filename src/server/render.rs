@@ -29,7 +29,8 @@ pub fn markdown_to_html(content: &str) -> String {
 
     let html = markdown_to_html_with_plugins(content, &opts, &plugins);
 
-    // VitePress-style heading anchors
+    // VitePress-style code block wrappers + heading anchors
+    let html = wrap_code_blocks(&html);
     add_header_anchors(&html)
 }
 
@@ -84,6 +85,52 @@ fn heading_slug(text: &str) -> String {
 }
 
 /// Add VitePress-style anchor links to h1-h4 headings.
+/// Wrap <pre><code> blocks in VitePress-style structure with language label and copy button.
+fn wrap_code_blocks(html: &str) -> String {
+    let mut out = String::with_capacity(html.len() + 2048);
+    let mut rest = html;
+
+    while let Some(ps) = rest.find("<pre") {
+        out.push_str(&rest[..ps]);
+        rest = &rest[ps..];
+
+        // Find the closing </pre>
+        let end = rest.find("</pre>");
+        let end = match end {
+            Some(e) => e + 6,
+            None => { out.push_str(rest); break; }
+        };
+
+        let block = &rest[..end];
+        rest = &rest[end..];
+
+        // Extract language from <code class="language-xxx">
+        let lang = if let Some(cs) = block.find("class=\"language-") {
+            let after = &block[cs + 17..];
+            if let Some(ce) = after.find('"') {
+                Some(&after[..ce])
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let lang_label = lang.unwrap_or("");
+
+        // VitePress wrapper structure
+        out.push_str(&format!(
+            r##"<div class="vp-code-block-title"><div class="vp-code-block-title-bar"><span class="vp-code-block-title-text"></span></div><div class="language-{}"><button class="copy" title="复制代码"></button><span class="lang">{}</span>"##,
+            lang_label, lang_label
+        ));
+        out.push_str(block);
+        out.push_str("</div></div>");
+    }
+
+    out.push_str(rest);
+    out
+}
+
 fn add_header_anchors(html: &str) -> String {
     let mut out = String::with_capacity(html.len() + 1024);
     let mut rest = html;

@@ -674,11 +674,11 @@ main {
 /* 代码块 */
 .content pre {
   padding: 20px;
-  border-radius: 8px;
   overflow-x: auto;
-  margin: 20px 0;
+  margin: 0;
   font-size: 13px;
   line-height: 1.6;
+  border-radius: 0 0 8px 8px;
 }
 
 .content pre code {
@@ -688,6 +688,78 @@ main {
   font-size: 13px;
   line-height: 1.6;
   font-family: var(--vp-font-family-mono);
+}
+
+/* VitePress 风格代码块容器 */
+.vp-code-block-title {
+  margin: 20px 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vp-code-block-title-bar {
+  display: none;
+}
+
+.language- {
+  position: relative;
+}
+
+.language- .lang {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vp-c-text-3);
+  text-transform: uppercase;
+  user-select: none;
+  pointer-events: none;
+}
+
+.language- .copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg-soft);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.language-:hover .copy {
+  opacity: 1;
+}
+
+.language- .copy::before {
+  content: "📋";
+  font-size: 14px;
+}
+
+.language- .copy[data-copied]::before {
+  content: "✅";
+}
+
+/* 带语言名的容器 */
+.language-rust .lang,
+.language-python .lang,
+.language-javascript .lang,
+.language-typescript .lang,
+.language-json .lang,
+.language-bash .lang,
+.language-shell .lang,
+.language-html .lang,
+.language-css .lang {
+  display: block;
 }
 
 /* 列表 */
