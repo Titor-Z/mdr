@@ -20,6 +20,47 @@ function toggleTheme() {
   setTheme(next);
 }
 
+// 复制代码按钮
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.copy');
+  if (!btn) return;
+  
+  // 找到最近的 pre > code 或 pre
+  const container = btn.closest('.language-') || btn.closest('.vp-code-block-title');
+  if (!container) return;
+  const pre = container.querySelector('pre');
+  if (!pre) return;
+  
+  // 提取代码文本（去掉高亮 span 标签）
+  const code = pre.textContent || pre.innerText || '';
+  
+  // 复制到剪贴板
+  navigator.clipboard.writeText(code).then(() => {
+    btn.setAttribute('data-copied', 'true');
+    btn.title = '已复制';
+    setTimeout(() => {
+      btn.removeAttribute('data-copied');
+      btn.title = '复制代码';
+    }, 2000);
+  }).catch(() => {
+    // fallback: 使用 textarea
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.setAttribute('data-copied', 'true');
+    btn.title = '已复制';
+    setTimeout(() => {
+      btn.removeAttribute('data-copied');
+      btn.title = '复制代码';
+    }, 2000);
+  });
+});
+
 // 代码组标签页切换
 document.addEventListener('click', function(e) {
   const tab = e.target.closest('.vp-code-group .tab');
