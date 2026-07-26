@@ -42,6 +42,18 @@ pub async fn start(port: u16, dir: String) {
 
     let docs = scan_docs(&dir);
 
+    // 开发模式：从文件系统加载模板（改样式后重启即可，无需编译）
+    if std::env::var("MDR_DEV").is_ok() {
+        let template_dir = concat!(env!("CARGO_MANIFEST_DIR"), "/src/server/templates");
+        let base = std::fs::read_to_string(format!("{}/base.html", template_dir)).unwrap_or_default();
+        let index = std::fs::read_to_string(format!("{}/index.html", template_dir)).unwrap_or_default();
+        let doc = std::fs::read_to_string(format!("{}/document.html", template_dir)).unwrap_or_default();
+        env.add_template_owned("base.html", base).expect("base.html");
+        env.add_template_owned("index.html", index).expect("index.html");
+        env.add_template_owned("document.html", doc).expect("document.html");
+        eprintln!("  [dev] 从文件系统加载模板");
+    }
+
     let state = Arc::new(AppState {
         env,
         docs,
@@ -105,6 +117,7 @@ async fn doc_page(
     };
 
     let html_content = crate::server::render::markdown_to_html(&content);
+    let toc = crate::server::render::extract_toc(&content);
     let title = path.rsplit('/').next().unwrap_or(&path).to_string();
 
     let t = state.env.get_template("document.html").unwrap();
@@ -117,6 +130,7 @@ async fn doc_page(
         .render(minijinja::context! {
             title => title,
             content => html_content,
+            toc => toc,
             all_docs => &state.docs,
             current_path => path,
             theme => theme_str,

@@ -1,7 +1,71 @@
 use comrak::ComrakOptions;
+use comrak::nodes::{AstNode, NodeValue};
 use syntect::html::highlighted_html_for_string;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::ThemeSet;
+use serde::{Deserialize, Serialize};
+
+/// A heading item for the table of contents.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TocItem {
+    pub level: usize,
+    pub text: String,
+    pub slug: String,
+}
+
+/// Extract table of contents from markdown.
+pub fn extract_toc(content: &str) -> Vec<TocItem> {
+    let arena = comrak::Arena::new();
+    let mut opts = ComrakOptions::default();
+    opts.extension.table = true;
+    opts.extension.tasklist = true;
+    opts.extension.strikethrough = true;
+    opts.extension.tagfilter = true;
+    opts.render.unsafe_ = false;
+
+    let root = comrak::parse_document(&arena, content, &opts);
+    let mut items = Vec::new();
+    walk_headings(root, &mut items);
+    items
+}
+
+fn walk_headings<'a>(node: &'a AstNode<'a>, items: &mut Vec<TocItem>) {
+    let data = node.data.borrow();
+    match &data.value {
+        NodeValue::Heading(heading) => {
+            let level = heading.level as usize;
+            // Collect text content from inline children
+            let text = collect_text(node);
+            let slug = heading_slug(&text);
+            items.push(TocItem { level, text, slug });
+        }
+        _ => {}
+    }
+    for child in node.children() {
+        walk_headings(child, items);
+    }
+}
+
+fn collect_text<'a>(node: &'a AstNode<'a>) -> String {
+    let data = node.data.borrow();
+    if let NodeValue::Text(t) = &data.value {
+        return t.to_string();
+    }
+    let mut out = String::new();
+    for child in node.children() {
+        out.push_str(&collect_text(child));
+    }
+    out
+}
+
+fn heading_slug(text: &str) -> String {
+    text.chars()
+        .filter(|c| c.is_alphanumeric() || c.is_whitespace() || *c == '-' || *c == '_' || *c == '.')
+        .collect::<String>()
+        .to_lowercase()
+        .trim()
+        .replace(' ', "-")
+}
 
 /// Render Markdown to HTML with syntax highlighting and heading anchors.
 pub fn markdown_to_html(content: &str) -> String {
@@ -75,14 +139,7 @@ fn add_header_anchors(html: &str) -> String {
 
         let text = &rest[..end];
 
-        // Slug: lowercase, spaces to hyphens, keep alphanumeric/hyphen/underscore/dot
-        let slug: String = text
-            .chars()
-            .filter(|c| c.is_alphanumeric() || c.is_whitespace() || *c == '-' || *c == '_' || *c == '.')
-            .collect::<String>()
-            .to_lowercase()
-            .trim()
-            .replace(' ', "-");
+        let slug = heading_slug(text);
 
         // Rewrite heading: <h2 id="slug"><a class="header-anchor" href="#slug">#</a>text</h2>
         out.push_str(&format!(

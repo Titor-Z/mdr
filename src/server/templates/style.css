@@ -390,11 +390,91 @@ main {
   font-weight: 600;
 }
 
-/* 右侧内容区 — 无硬限制，靠间距保证可读性 */
+/* 右侧内容区 */
 .content {
   flex: 1;
   min-width: 0;
   padding: 48px 64px 64px;
+}
+
+/* =============================================
+   On This Page — 右侧目录导航（VitePress 风格）
+   ============================================= */
+
+.toc-sidebar {
+  flex-shrink: 0;
+  width: 200px;
+  padding: 48px 0 32px 16px;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  display: none;
+}
+
+/* 只在内容足够长时显示 */
+@media (min-width: 1200px) {
+  .toc-sidebar {
+    display: block;
+  }
+}
+
+.toc-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--vp-c-text-3);
+  margin-bottom: 12px;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-list li {
+  margin-bottom: 2px;
+}
+
+.toc-list a {
+  display: block;
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all 0.25s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toc-list a:hover {
+  color: var(--vp-c-brand-1);
+  border-left-color: var(--vp-c-brand-1);
+}
+
+/* 层级缩进 */
+.toc-level-2 { padding-left: 0; }
+.toc-level-3 { padding-left: 12px; }
+.toc-level-4 { padding-left: 24px; }
+.toc-level-5 { padding-left: 36px; }
+.toc-level-6 { padding-left: 48px; }
+
+.toc-level-3 a { font-size: 12px; }
+.toc-level-4 a { font-size: 12px; }
+
+/* toc 滚动条 */
+.toc-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb {
+  background: var(--vp-c-border);
+  border-radius: 2px;
 }
 
 /* =============================================
