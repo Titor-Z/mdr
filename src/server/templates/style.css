@@ -412,7 +412,7 @@ main {
   padding: 12px 0;
   margin: 0 0 24px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .page-nav-btn {
@@ -509,6 +509,7 @@ main {
     width: 200px;
     flex-shrink: 0;
     display: block;
+    order: 1;
   }
 
   .content-wrapper {
