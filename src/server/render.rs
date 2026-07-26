@@ -19,9 +19,9 @@ pub fn markdown_to_html(content: &str) -> String {
     opts.extension.tagfilter = true;
     opts.render.unsafe_ = false;
 
-    // Use SyntectAdapter with base16-ocean.dark for VitePress-like colors
+    // SyntectAdapter with Solarized (dark) — 接近 VitePress github-dark 配色
     let adapter = SyntectAdapterBuilder::new()
-        .theme("base16-ocean.dark")
+        .theme("Solarized (dark)")
         .build();
 
     let mut plugins = Plugins::default();
