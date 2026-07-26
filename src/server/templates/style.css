@@ -891,6 +891,28 @@ main {
   background: var(--vp-c-danger-soft);
 }
 
+.content .custom-block.caution {
+  border-color: var(--vp-c-caution-1);
+  background: var(--vp-c-caution-soft);
+}
+
+.content .custom-block.important {
+  border-color: var(--vp-c-important-1);
+  background: var(--vp-c-important-soft);
+}
+
+.content .custom-block.note {
+  border-color: var(--vp-c-default-1);
+  background: var(--vp-c-default-soft);
+}
+
+.content .custom-block.details {
+  border-color: var(--vp-c-default-1);
+  background: var(--vp-c-bg-soft);
+}
+  background: var(--vp-c-danger-soft);
+}
+
 .content .custom-block-title {
   font-weight: 700;
   font-size: 14px;
@@ -903,6 +925,9 @@ main {
 .content .custom-block.info .custom-block-title { color: var(--vp-c-default-1); }
 .content .custom-block.warning .custom-block-title { color: var(--vp-c-warning-1); }
 .content .custom-block.danger .custom-block-title { color: var(--vp-c-danger-1); }
+.content .custom-block.caution .custom-block-title { color: var(--vp-c-caution-1); }
+.content .custom-block.important .custom-block-title { color: var(--vp-c-important-1); }
+.content .custom-block.note .custom-block-title { color: var(--vp-c-default-1); }
 
 /* 表格 */
 .content table {

@@ -10,124 +10,125 @@ pub struct TocItem {
     pub slug: String,
 }
 
-/// Pre-process markdown to replace `::: code-group` blocks with raw HTML.
-fn preprocess_code_groups(content: &str) -> String {
+/// Pre-process markdown to replace `:::` containers with raw HTML.
+fn preprocess_containers(content: &str) -> String {
     let mut out = String::with_capacity(content.len() + 2048);
     let mut rest = content;
 
-    while let Some(start) = rest.find("::: code-group\n") {
+    while let Some(start) = rest.find("\n:::") {
+        // Check it starts at a line boundary (after newline or at start)
+        if start != 0 && &rest[start - 1..start] != "\n" {
+            out.push_str(&rest[..=start]);
+            rest = &rest[start + 1..];
+            continue;
+        }
+
         out.push_str(&rest[..start]);
-        rest = &rest[start + 15..]; // skip "::: code-group\n"
+        rest = &rest[start + 1..]; // skip the first \n, keep "::: ..."
+
+        // Find the end of the opening line
+        let eol = rest.find('\n').unwrap_or(rest.len());
+        let header = &rest[..eol]; // e.g., "::: info" or "::: code-group"
+        rest = &rest[eol + 1..];
 
         // Find closing :::
-        let end = rest.find("\n:::");
-        let end = match end {
-            Some(e) => e,
+        let close_marker = rest.find("\n:::");
+        let close_pos = match close_marker {
+            Some(p) => p,
             None => { out.push_str(rest); break; }
         };
 
-        let block = &rest[..end];
-        rest = &rest[end + 4..]; // skip "\n:::\n" (including the closing)
+        let block = &rest[..close_pos];
+        rest = &rest[close_pos + 4..]; // skip past "\n:::\n"
 
-        // Parse code fences inside
-        let mut tabs_html = String::new();
-        let mut blocks_html = String::new();
-        let mut tab_idx = 0;
-        let mut pos = 0;
+        // Parse type and optional title
+        let header_trimmed = header.trim_start_matches(':').trim();
+        let parts: Vec<&str> = header_trimmed.splitn(2, |c: char| c.is_whitespace()).collect();
+        let ctype = parts.first().unwrap_or(&"").trim();
+        let ctitle = parts.get(1).map(|s| s.trim()).unwrap_or("");
 
-        while let Some(fs) = block[pos..].find("```") {
-            let fence_start = pos + fs;
-            // Find the end of the opening fence line
-            let eol = block[fence_start..].find('\n');
-            let eol = match eol {
-                Some(e) => fence_start + e,
-                None => break,
-            };
+        match ctype {
+            "code-group" => {
+                // Code group with tabs
+                let mut tabs_html = String::new();
+                let mut blocks_html = String::new();
+                let mut tab_idx = 0;
+                let mut pos = 0;
 
-            let header = block[fence_start + 3..eol].trim().to_string();
-            let (lang, title) = if let Some(tb) = header.find(" [") {
-                let l = header[..tb].to_string();
-                let t_raw = header[tb + 2..].to_string();
-                let t = if t_raw.ends_with(']') { t_raw[..t_raw.len() - 1].to_string() } else { t_raw };
-                (l, t)
-            } else {
-                (header.clone(), header)
-            };
-
-            // Find closing ```
-            let code_start = eol + 1;
-            let close = block[code_start..].find("\n```");
-            let (code, next_pos) = match close {
-                Some(c) => {
-                    let code_end = code_start + c;
-                    let code_text = &block[code_start..code_end];
-                    let next = code_end + 5; // skip "\n```"
-                    // Skip trailing whitespace after closing ```
-                    let next = if next < block.len() && block.as_bytes()[next] == b'\n' {
-                        next + 1
+                while let Some(fs) = block[pos..].find("```") {
+                    let fence_start = pos + fs;
+                    let eol_fence = block[fence_start..].find('\n').unwrap_or(block.len() - fence_start);
+                    let header = block[fence_start + 3..fence_start + eol_fence].trim().to_string();
+                    let (lang, title) = if let Some(tb) = header.find(" [") {
+                        (header[..tb].to_string(), header[tb + 2..].trim_end_matches(']').to_string())
                     } else {
-                        next
+                        (header.clone(), header)
                     };
-                    (code_text, next)
+
+                    let code_start = fence_start + eol_fence + 1;
+                    let close_fence = block[code_start..].find("\n```");
+                    let (code, next_pos) = match close_fence {
+                        Some(c) => {
+                            let code_end = code_start + c;
+                            let next = code_end + 5;
+                            let next = if next < block.len() && block.as_bytes()[next] == b'\n' { next + 1 } else { next };
+                            (&block[code_start..code_end], next)
+                        }
+                        None => (&block[code_start..], block.len()),
+                    };
+
+                    let active_class = if tab_idx == 0 { " active" } else { "" };
+                    tabs_html.push_str(&format!("<label class=\"tab{}\" data-title=\"{}\">{}</label>", active_class, title, title));
+
+                    let ss = syntect::parsing::SyntaxSet::load_defaults_newlines();
+                    let ts = syntect::highlighting::ThemeSet::load_defaults();
+                    let theme = &ts.themes["Solarized (dark)"];
+                    let lang_token = match lang.as_str() { "ts" | "typescript" => "js", "py" => "python", "sh" => "bash", o => o };
+
+                    let highlighted = if let Some(syn) = ss.find_syntax_by_token(lang_token) {
+                        use syntect::easy::HighlightLines;
+                        use syntect::html::append_highlighted_html_for_styled_line;
+                        use syntect::util::LinesWithEndings;
+                        let mut hl = HighlightLines::new(syn, theme);
+                        let bg = theme.settings.background.unwrap_or(syntect::highlighting::Color::WHITE);
+                        let mut o = String::new();
+                        for line in LinesWithEndings::from(code) {
+                            let regions = hl.highlight_line(line, &ss).unwrap_or_default();
+                            append_highlighted_html_for_styled_line(&regions[..], syntect::html::IncludeBackground::IfDifferent(bg), &mut o).ok();
+                        }
+                        o
+                    } else {
+                        format!("<span style=\"color:#657b83;\">{}</span>", esc_html(code))
+                    };
+
+                    blocks_html.push_str(&format!("<div class=\"code-block{}\"><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button><pre data-cg=\"1\"><code>{}</code></pre></div></div>", active_class, lang, highlighted));
+                    tab_idx += 1;
+                    pos = next_pos;
                 }
-                None => { (&block[code_start..], block.len()) }
-            };
 
-            let active_class = if tab_idx == 0 { " active" } else { "" };
+                out.push_str(&format!("<div class=\"vp-code-group\"><div class=\"tabs\">{}</div><div class=\"blocks\">{}</div></div>", tabs_html, blocks_html));
+            }
 
-            tabs_html.push_str(&format!(
-                "<label class=\"tab{}\" data-title=\"{}\">{}</label>",
-                active_class, title, title
-            ));
+            "info" | "tip" | "warning" | "danger" | "caution" | "important" | "note" => {
+                // Custom container
+                let title_html = if !ctitle.is_empty() {
+                    format!("<p class=\"custom-block-title\">{}</p>", ctitle)
+                } else {
+                    String::new()
+                };
+                out.push_str(&format!("<div class=\"custom-block {}\">{}{}</div>", ctype, title_html, block));
+            }
 
-            // Highlight code using syntect (matching comrak adapter format)
-            let ss = syntect::parsing::SyntaxSet::load_defaults_newlines();
-            let ts = syntect::highlighting::ThemeSet::load_defaults();
-            let theme = &ts.themes["Solarized (dark)"];
+            "details" => {
+                let summary = if !ctitle.is_empty() { ctitle } else { "详细信息" };
+                out.push_str(&format!("<details class=\"custom-block details\"><summary>{}</summary>{}</details>", summary, block));
+            }
 
-            // Map common language aliases
-            let lang_token = match lang.as_str() {
-                "ts" | "typescript" => "js",
-                "py" => "python",
-                "sh" => "bash",
-                other => other,
-            };
-
-            // 即使纯文本也用 span 包装，保证字体/间距一致
-            let highlighted_code = if let Some(syn) = ss.find_syntax_by_token(lang_token) {
-                use syntect::easy::HighlightLines;
-                use syntect::html::append_highlighted_html_for_styled_line;
-                use syntect::util::LinesWithEndings;
-
-                let mut highlighter = HighlightLines::new(syn, theme);
-                let bg = theme.settings.background.unwrap_or(syntect::highlighting::Color::WHITE);
-                let mut output = String::new();
-                for line in LinesWithEndings::from(code) {
-                    let regions = highlighter.highlight_line(line, &ss).unwrap_or_default();
-                    append_highlighted_html_for_styled_line(
-                        &regions[..],
-                        syntect::html::IncludeBackground::IfDifferent(bg),
-                        &mut output,
-                    ).ok();
-                }
-                output
-            } else {
-                format!("<span style=\"color:#657b83;\">{}</span>", esc_html(code))
-            };
-
-            blocks_html.push_str(&format!(
-                "<div class=\"code-block{}\"><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button><pre data-cg=\"1\"><code>{}</code></pre></div></div>",
-                active_class, lang, highlighted_code
-            ));
-
-            tab_idx += 1;
-            pos = next_pos;
+            _ => {
+                // Unknown container, pass through as-is
+                out.push_str(&format!(":::{}  {}", ctype, ctitle));
+            }
         }
-
-        out.push_str(&format!(
-            "<div class=\"vp-code-group\"><div class=\"tabs\">{}</div><div class=\"blocks\">{}</div></div>",
-            tabs_html, blocks_html
-        ));
     }
 
     out.push_str(rest);
@@ -137,7 +138,7 @@ fn preprocess_code_groups(content: &str) -> String {
 /// Render Markdown to HTML with syntax highlighting and heading anchors.
 pub fn markdown_to_html(content: &str) -> String {
     // Pre-process code groups
-    let content = preprocess_code_groups(content);
+    let content = preprocess_containers(content);
 
     let mut opts = ComrakOptions::default();
     opts.extension.table = true;
