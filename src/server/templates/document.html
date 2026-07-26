@@ -17,20 +17,22 @@
   </nav>
 
   <div class="content-wrapper">
-    <!-- 窄屏 ToC 折叠栏（弹出层） -->
+    <!-- 窄屏页面导航 -->
     {% if toc | length > 0 %}
-    <button class="toc-bar" onclick="toggleTocMobile()">
-      <span class="toc-bar-label">On This Page</span>
-      <span class="toc-bar-chevron" id="toc-chevron">▾</span>
-    </button>
-    <div class="toc-mobile" id="toc-mobile">
-      <ul class="toc-list">
-      {% for item in toc %}
-        <li class="toc-level-{{ item.level }}">
-          <a href="#{{ item.slug }}" onclick="closeTocMobile()">{{ item.text }}</a>
-        </li>
-      {% endfor %}
-      </ul>
+    <div class="page-nav">
+      <button class="page-nav-btn" onclick="togglePageNav()">
+        页面导航
+        <span class="page-nav-chevron" id="page-nav-chevron">▾</span>
+      </button>
+      <div class="page-nav-dropdown" id="page-nav-dropdown">
+        <ul class="page-nav-list">
+        {% for item in toc %}
+          <li class="nav-level-{{ item.level }}">
+            <a href="#{{ item.slug }}" onclick="closePageNav()">{{ item.text }}</a>
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
     </div>
     {% endif %}
 

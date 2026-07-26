@@ -20,22 +20,33 @@ function toggleTheme() {
   setTheme(next);
 }
 
-// 窄屏 ToC 下拉菜单
-function toggleTocMobile() {
-  const panel = document.getElementById('toc-mobile');
-  const chevron = document.getElementById('toc-chevron');
-  if (!panel || !chevron) return;
-  const isOpen = panel.classList.toggle('open');
-  chevron.classList.toggle('open', isOpen);
+// 页面导航下拉菜单
+function togglePageNav() {
+  const dd = document.getElementById('page-nav-dropdown');
+  const ch = document.getElementById('page-nav-chevron');
+  if (!dd || !ch) return;
+  const isOpen = dd.classList.toggle('open');
+  ch.classList.toggle('open', isOpen);
 }
 
-function closeTocMobile() {
-  const panel = document.getElementById('toc-mobile');
-  const chevron = document.getElementById('toc-chevron');
-  if (!panel || !chevron) return;
-  panel.classList.remove('open');
-  chevron.classList.remove('open');
+function closePageNav() {
+  const dd = document.getElementById('page-nav-dropdown');
+  const ch = document.getElementById('page-nav-chevron');
+  if (!dd || !ch) return;
+  dd.classList.remove('open');
+  ch.classList.remove('open');
 }
+
+// 点击外部关闭
+function closePageNavOnOutside(event) {
+  const nav = document.querySelector('.page-nav');
+  if (!nav) return;
+  if (!nav.contains(event.target)) {
+    closePageNav();
+  }
+}
+
+document.addEventListener('click', closePageNavOnOutside);
 
 // 页面加载时恢复主题
 document.addEventListener('DOMContentLoaded', () => {
