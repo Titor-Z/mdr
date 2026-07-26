@@ -40,19 +40,5 @@
       {{ content | safe }}
     </article>
   </div>
-
-  <!-- 宽屏右侧 ToC -->
-  {% if toc | length > 0 %}
-  <nav class="toc-sidebar">
-    <div class="toc-label">On This Page</div>
-    <ul class="toc-list">
-    {% for item in toc %}
-      <li class="toc-level-{{ item.level }}">
-        <a href="#{{ item.slug }}">{{ item.text }}</a>
-      </li>
-    {% endfor %}
-    </ul>
-  </nav>
-  {% endif %}
 </div>
 {% endblock %}
