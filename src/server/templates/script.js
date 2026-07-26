@@ -20,35 +20,22 @@ function toggleTheme() {
   setTheme(next);
 }
 
-// 窄屏 ToC 弹出层
+// 窄屏 ToC 下拉菜单
 function toggleTocMobile() {
-  const overlay = document.getElementById('toc-mobile');
+  const panel = document.getElementById('toc-mobile');
   const chevron = document.getElementById('toc-chevron');
-  if (!overlay || !chevron) return;
-  const isOpen = overlay.classList.toggle('open');
+  if (!panel || !chevron) return;
+  const isOpen = panel.classList.toggle('open');
   chevron.classList.toggle('open', isOpen);
-  document.body.style.overflow = isOpen ? 'hidden' : '';
 }
 
 function closeTocMobile() {
-  const overlay = document.getElementById('toc-mobile');
+  const panel = document.getElementById('toc-mobile');
   const chevron = document.getElementById('toc-chevron');
-  if (!overlay || !chevron) return;
-  overlay.classList.remove('open');
+  if (!panel || !chevron) return;
+  panel.classList.remove('open');
   chevron.classList.remove('open');
-  document.body.style.overflow = '';
 }
-
-function closeTocMobileOutside(event) {
-  if (event.target === event.currentTarget) {
-    closeTocMobile();
-  }
-}
-
-// 按下 Esc 关闭 ToC
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeTocMobile();
-});
 
 // 页面加载时恢复主题
 document.addEventListener('DOMContentLoaded', () => {
