@@ -1,8 +1,5 @@
-use comrak::ComrakOptions;
-use comrak::nodes::{AstNode, NodeValue};
-use syntect::html::highlighted_html_for_string;
-use syntect::parsing::SyntaxSet;
-use syntect::highlighting::ThemeSet;
+use comrak::{markdown_to_html_with_plugins, ComrakOptions, Plugins};
+use comrak::plugins::syntect::SyntectAdapterBuilder;
 use serde::{Deserialize, Serialize};
 
 /// A heading item for the table of contents.
@@ -11,6 +8,29 @@ pub struct TocItem {
     pub level: usize,
     pub text: String,
     pub slug: String,
+}
+
+/// Render Markdown to HTML with syntax highlighting and heading anchors.
+pub fn markdown_to_html(content: &str) -> String {
+    let mut opts = ComrakOptions::default();
+    opts.extension.table = true;
+    opts.extension.tasklist = true;
+    opts.extension.strikethrough = true;
+    opts.extension.tagfilter = true;
+    opts.render.unsafe_ = false;
+
+    // Use SyntectAdapter with base16-ocean.dark for VitePress-like colors
+    let adapter = SyntectAdapterBuilder::new()
+        .theme("base16-ocean.dark")
+        .build();
+
+    let mut plugins = Plugins::default();
+    plugins.render.codefence_syntax_highlighter = Some(&adapter);
+
+    let html = markdown_to_html_with_plugins(content, &opts, &plugins);
+
+    // VitePress-style heading anchors
+    add_header_anchors(&html)
 }
 
 /// Extract table of contents from markdown.
@@ -29,26 +49,22 @@ pub fn extract_toc(content: &str) -> Vec<TocItem> {
     items
 }
 
-fn walk_headings<'a>(node: &'a AstNode<'a>, items: &mut Vec<TocItem>) {
+fn walk_headings<'a>(node: &'a comrak::nodes::AstNode<'a>, items: &mut Vec<TocItem>) {
     let data = node.data.borrow();
-    match &data.value {
-        NodeValue::Heading(heading) => {
-            let level = heading.level as usize;
-            // Collect text content from inline children
-            let text = collect_text(node);
-            let slug = heading_slug(&text);
-            items.push(TocItem { level, text, slug });
-        }
-        _ => {}
+    if let comrak::nodes::NodeValue::Heading(heading) = &data.value {
+        let level = heading.level as usize;
+        let text = collect_text(node);
+        let slug = heading_slug(&text);
+        items.push(TocItem { level, text, slug });
     }
     for child in node.children() {
         walk_headings(child, items);
     }
 }
 
-fn collect_text<'a>(node: &'a AstNode<'a>) -> String {
+fn collect_text<'a>(node: &'a comrak::nodes::AstNode<'a>) -> String {
     let data = node.data.borrow();
-    if let NodeValue::Text(t) = &data.value {
+    if let comrak::nodes::NodeValue::Text(t) = &data.value {
         return t.to_string();
     }
     let mut out = String::new();
@@ -67,27 +83,6 @@ fn heading_slug(text: &str) -> String {
         .replace(' ', "-")
 }
 
-/// Render Markdown to HTML with syntax highlighting and heading anchors.
-pub fn markdown_to_html(content: &str) -> String {
-    let mut opts = ComrakOptions::default();
-    opts.extension.table = true;
-    opts.extension.tasklist = true;
-    opts.extension.strikethrough = true;
-    opts.extension.tagfilter = true;
-    opts.render.unsafe_ = false;
-
-    let html = comrak::markdown_to_html_with_plugins(content, &opts, &comrak::Plugins::default());
-
-    // VitePress-style heading anchors
-    let html = add_header_anchors(&html);
-
-    // Syntax highlighting
-    let ss = SyntaxSet::load_defaults_newlines();
-    let ts = ThemeSet::load_defaults();
-    let theme = &ts.themes["base16-ocean.dark"];
-    highlight_code_blocks(&html, &ss, theme)
-}
-
 /// Add VitePress-style anchor links to h1-h4 headings.
 fn add_header_anchors(html: &str) -> String {
     let mut out = String::with_capacity(html.len() + 1024);
@@ -102,26 +97,24 @@ fn add_header_anchors(html: &str) -> String {
             break;
         }
 
-        // rest starts at "<hN...", so level digit is at index 2
+        // rest starts at "<hN...>"
         if rest.len() < 4 {
             out.push_str(rest);
             break;
         }
-        let level_char = rest.as_bytes()[2] as char; // '1'..'4'
+        let level_char = rest.as_bytes()[2] as char;
         if level_char != '1' && level_char != '2' && level_char != '3' && level_char != '4' {
             out.push_str(&rest[..1]);
             rest = &rest[1..];
             continue;
         }
 
-        // Find closing '>' of the opening tag
         let cb = match rest.find('>') {
             Some(p) => p,
             None => { out.push_str(rest); break; }
         };
 
-        // Extract the tag name (e.g. "h2") from "<h2...>"
-        let tag_name = &rest[1..cb]; // e.g. "h2" or "h2 class=..."
+        let tag_name = &rest[1..cb];
         let bare_tag: &str = if let Some(sp) = tag_name.find(' ') {
             &tag_name[..sp]
         } else {
@@ -130,7 +123,6 @@ fn add_header_anchors(html: &str) -> String {
 
         rest = &rest[cb + 1..];
 
-        // Find closing tag
         let ct = format!("</{}>", bare_tag);
         let end = match rest.find(&ct) {
             Some(p) => p,
@@ -138,88 +130,18 @@ fn add_header_anchors(html: &str) -> String {
         };
 
         let text = &rest[..end];
-
         let slug = heading_slug(text);
 
-        // Rewrite heading: <h2 id="slug"><a class="header-anchor" href="#slug">#</a>text</h2>
         out.push_str(&format!(
             "<{} id=\"{}\"><a class=\"header-anchor\" href=\"#{}\" aria-hidden=\"true\">#</a>{}</{}>",
             tag_name, slug, slug, text, bare_tag
         ));
 
-        rest = &rest[end + ct.len()..]; // skip past </hN>
+        rest = &rest[end + ct.len()..];
     }
 
     out.push_str(rest);
     out
-}
-
-/// Apply syntax highlighting to <pre><code> blocks.
-fn highlight_code_blocks(html: &str, ss: &SyntaxSet, theme: &syntect::highlighting::Theme) -> String {
-    let mut out = String::with_capacity(html.len() + 4096);
-    let mut rest = html;
-
-    while let Some(ps) = rest.find("<pre><code") {
-        out.push_str(&rest[..ps]);
-        rest = &rest[ps..];
-
-        let te = match rest.find('>') {
-            Some(p) => p,
-            None => { out.push_str(rest); break; }
-        };
-        let after = &rest[te + 1..];
-
-        let close = match after.find("</code></pre>") {
-            Some(p) => p,
-            None => { out.push_str(rest); break; }
-        };
-
-        let code = &after[..close];
-
-        // Detect language from class attribute on the opening tag
-        let attrs = &rest[..te];
-        let lang = attrs
-            .find("class=\"language-")
-            .and_then(|cs| {
-                let a = &attrs[cs + 17..];
-                a.find('"').map(|ce| &a[..ce])
-            });
-
-        let decoded = htmldecode(code);
-
-        let highlighted = if let Some(lang) = lang {
-            if let Some(syn) = ss.find_syntax_by_token(lang) {
-                highlighted_html_for_string(&decoded, ss, syn, theme)
-                    .unwrap_or_else(|_| esc_html(code))
-            } else {
-                esc_html(code)
-            }
-        } else {
-            esc_html(code)
-        };
-
-        out.push_str("<pre style=\"background:#1b2b34;color:#cdd3de;padding:16px;border-radius:8px;overflow-x:auto\">");
-        out.push_str(&highlighted);
-        out.push_str("</pre>");
-        rest = &after[close + 13..];
-    }
-
-    out.push_str(rest);
-    out
-}
-
-fn htmldecode(s: &str) -> String {
-    s.replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-}
-
-fn esc_html(s: &str) -> String {
-    s.replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
 }
 
 #[cfg(test)]
@@ -260,5 +182,17 @@ mod tests {
         let html = markdown_to_html("## Getting Started\n");
         assert!(html.contains("header-anchor"));
         assert!(html.contains("id=\"getting-started\""));
+    }
+
+    #[test]
+    fn test_extract_toc() {
+        let toc = extract_toc("# A\n\n## B\n\n### C\n");
+        assert_eq!(toc.len(), 3);
+        assert_eq!(toc[0].level, 1);
+        assert_eq!(toc[0].text, "A");
+        assert_eq!(toc[1].level, 2);
+        assert_eq!(toc[1].text, "B");
+        assert_eq!(toc[2].level, 3);
+        assert_eq!(toc[2].text, "C");
     }
 }

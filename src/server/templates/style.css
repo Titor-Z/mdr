@@ -409,7 +409,6 @@ main {
 .page-nav {
   position: fixed;
   top: 56px;
-  left: 0;
   z-index: 40;
   border-bottom: 1px solid var(--vp-c-divider);
   padding: 10px 0 10px 1rem;
@@ -674,12 +673,10 @@ main {
 
 /* 代码块 */
 .content pre {
-  background: var(--vp-c-bg-soft);
   padding: 20px;
   border-radius: 8px;
   overflow-x: auto;
   margin: 20px 0;
-  border: 1px solid var(--vp-c-divider);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -688,7 +685,6 @@ main {
   background: none;
   padding: 0;
   border: none;
-  color: var(--vp-c-text-1);
   font-size: 13px;
   line-height: 1.6;
   font-family: var(--vp-font-family-mono);
