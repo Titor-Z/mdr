@@ -706,6 +706,65 @@ main {
   width: fit-content;
 }
 
+/* VitePress 代码组（标签页切换） */
+.vp-code-group {
+  margin: 20px 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vp-code-group .tabs {
+  display: flex;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+  overflow-x: auto;
+  padding: 0 8px;
+}
+
+.vp-code-group .tab {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.25s;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.vp-code-group .tab:hover {
+  color: var(--vp-c-text-1);
+}
+
+.vp-code-group .tab.active {
+  color: var(--vp-c-brand-1);
+  border-bottom-color: var(--vp-c-brand-1);
+}
+
+.vp-code-group .blocks .code-block {
+  display: none;
+}
+
+.vp-code-group .blocks .code-block.active {
+  display: block;
+}
+
+.vp-code-group .blocks .code-block .vp-code-block-title {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.vp-code-group .blocks .code-block .language- {
+  margin: 0;
+}
+
+.vp-code-group .blocks .code-block pre {
+  border-radius: 0;
+}
+
 /* VitePress 风格代码块容器 */
 .vp-code-block-title {
   margin: 20px 0;
