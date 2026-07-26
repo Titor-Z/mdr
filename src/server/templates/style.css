@@ -729,15 +729,15 @@ main {
   color: var(--vp-c-text-2);
 }
 
-.language- {
+[class*="language-"] {
   position: relative;
 }
 
-.language- .lang {
+[class*="language-"] .lang {
   display: none;
 }
 
-.language- .copy {
+[class*="language-"] .copy {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -755,16 +755,16 @@ main {
   justify-content: center;
 }
 
-.language-:hover .copy {
+[class*="language-"]:hover .copy {
   opacity: 1;
 }
 
-.language- .copy::before {
+[class*="language-"] .copy::before {
   content: "📋";
   font-size: 13px;
 }
 
-.language- .copy[data-copied]::before {
+[class*="language-"] .copy[data-copied]::before {
   content: "✅";
 }
 
