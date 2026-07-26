@@ -408,19 +408,26 @@ main {
 /* --- 窄屏：折叠栏 --- */
 .toc-bar {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 6px 14px;
   margin: 16px 0 0;
-  border-bottom: 1px solid var(--vp-c-divider);
+  background: none;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
   cursor: pointer;
   user-select: none;
-  transition: background 0.25s;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+  transition: all 0.25s;
 }
 
 .toc-bar:hover {
-  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg-soft);
 }
 
 .toc-bar-label {

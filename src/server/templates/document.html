@@ -19,10 +19,10 @@
   <div class="content-wrapper">
     <!-- 窄屏 ToC 折叠栏（弹出层） -->
     {% if toc | length > 0 %}
-    <div class="toc-bar" onclick="toggleTocMobile()">
+    <button class="toc-bar" onclick="toggleTocMobile()">
       <span class="toc-bar-label">On This Page</span>
       <span class="toc-bar-chevron" id="toc-chevron">▾</span>
-    </div>
+    </button>
     <div class="toc-mobile" id="toc-mobile">
       <ul class="toc-list">
       {% for item in toc %}

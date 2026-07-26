@@ -61,8 +61,18 @@ pub async fn start(port: u16, dir: String) {
         theme: AtomicU16::new(0),
     });
 
-    let assets_css = include_str!("templates/style.css");
-    let assets_js = include_str!("templates/script.js");
+    // 开发模式：CSS/JS 也从文件系统加载
+    let template_dir = concat!(env!("CARGO_MANIFEST_DIR"), "/src/server/templates");
+    let assets_css = if std::env::var("MDR_DEV").is_ok() {
+        std::fs::read_to_string(format!("{}/style.css", template_dir)).unwrap_or_default()
+    } else {
+        include_str!("templates/style.css").to_string()
+    };
+    let assets_js = if std::env::var("MDR_DEV").is_ok() {
+        std::fs::read_to_string(format!("{}/script.js", template_dir)).unwrap_or_default()
+    } else {
+        include_str!("templates/script.js").to_string()
+    };
 
     let app = Router::new()
         .route("/", get(index_page))
