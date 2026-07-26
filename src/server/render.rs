@@ -139,16 +139,25 @@ fn convert_to_dual_theme(html: &str) -> String {
             None
         };
 
-        // Extract code content (everything between <code> and </code>)
+        // Extract PLAIN TEXT code (strip HTML tags, decode entities)
         if let Some(cs) = block.find("<code") {
             let code_tag_end = block[cs..].find('>').map(|p| cs + p + 1).unwrap_or(0);
             let code_end_tag = format!("</code>");
             if let Some(ce) = block[code_tag_end..].find(&code_end_tag) {
-                let code_text = &block[code_tag_end..code_tag_end + ce];
-                // Decode HTML entities for highlighting, then re-highlight with dual theme
-                let decoded = htmldecode(code_text);
-                let lang_label = lang.unwrap_or("text");
-                let highlighted = highlight_dual_theme(&decoded, lang_label);
+                let inner = &block[code_tag_end..code_tag_end + ce];
+                // Strip all HTML tags to get plain text
+                let mut plain = String::with_capacity(inner.len());
+                let mut in_tag = false;
+                for ch in inner.chars() {
+                    match ch {
+                        '<' => in_tag = true,
+                        '>' => in_tag = false,
+                        _ if !in_tag => plain.push(ch),
+                        _ => {}
+                    }
+                }
+                let decoded = htmldecode(&plain);
+                let highlighted = highlight_dual_theme(&decoded, lang.unwrap_or("text"));
                 out.push_str(&highlighted);
                 continue;
             }
