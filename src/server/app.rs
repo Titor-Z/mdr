@@ -96,7 +96,7 @@ async fn doc_page(
     let file_path = state.serve_dir.join(&path);
 
     if !file_path.exists() || !file_path.is_file() {
-        return Html("404 Not Found: {}".to_string());
+        return Html(format!("404 Not Found: {}", path));
     }
 
     let content = match std::fs::read_to_string(&file_path) {

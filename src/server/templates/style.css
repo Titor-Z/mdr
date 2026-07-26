@@ -224,7 +224,7 @@ header {
 }
 
 .header-inner {
-  max-width: 1160px;
+  max-width: 1440px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -339,9 +339,9 @@ main {
 
 .doc-layout {
   display: flex;
-  max-width: 1160px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 32px;
   gap: 0;
 }
 
@@ -390,12 +390,11 @@ main {
   font-weight: 600;
 }
 
-/* 右侧内容区 */
+/* 右侧内容区 — 无硬限制，靠间距保证可读性 */
 .content {
   flex: 1;
   min-width: 0;
-  max-width: 800px;
-  padding: 48px 48px 64px;
+  padding: 48px 64px 64px;
 }
 
 /* =============================================
@@ -711,7 +710,7 @@ footer {
 }
 
 .footer-inner {
-  max-width: 1160px;
+  max-width: 1440px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
