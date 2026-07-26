@@ -18,12 +18,20 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Create a sample .mdr/config.toml in the current directory
+    #[command(name = "init")]
+    Init {
+        /// Project directory
+        #[arg(default_value = ".")]
+        dir: String,
+    },
+
     /// Start HTTP server to serve markdown files
     #[command(name = "serve")]
     Serve {
-        /// Port to listen on
-        #[arg(short, long, default_value = "8080")]
-        port: u16,
+        /// Port to listen on（默认 8080，.mdr/config.toml 可覆盖）
+        #[arg(short, long)]
+        port: Option<u16>,
 
         /// Directory to serve markdown files from
         #[arg(short, long, default_value = ".")]

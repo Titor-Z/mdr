@@ -30,9 +30,13 @@ pub struct DocInfo {
 }
 
 /// Start the HTTP server.
-pub async fn start(port: u16, dir: String) {
+pub async fn start(cli_port: Option<u16>, dir: String) {
     let dir = std::fs::canonicalize(&dir).unwrap_or_else(|_| Path::new(&dir).to_path_buf());
     eprintln!("Serving markdown files from: {}", dir.display());
+
+    // 加载项目配置
+    let cfg = crate::server::config::Config::load(&dir);
+    let port = cli_port.unwrap_or(cfg.server.port);
 
     // Build template environment
     let mut env = Environment::new();

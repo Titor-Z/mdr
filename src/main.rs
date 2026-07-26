@@ -13,11 +13,16 @@ fn main() -> Result<()> {
     let cli = mdr::cli::Cli::parse();
 
     match &cli.command {
+        Some(mdr::cli::Commands::Init { dir }) => {
+            let project_dir = std::path::Path::new(dir);
+            mdr::server::config::create_example(project_dir)
+                .map_err(|e| anyhow::anyhow!("Failed to create config: {}", e))
+        }
         Some(mdr::cli::Commands::Serve { port, dir }) => {
-            let port = *port;
+            let cli_port = *port;
             let dir = dir.clone();
             let rt = tokio::runtime::Runtime::new()?;
-            rt.block_on(mdr::server::app::start(port, dir));
+            rt.block_on(mdr::server::app::start(cli_port, dir));
             Ok(())
         }
         None => {
