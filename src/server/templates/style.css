@@ -580,7 +580,7 @@ main {
    VitePress 风格文章排版
    ============================================= */
 
-/* 标题层级 */
+/* 标题层级（VitePress 精确尺寸） */
 .content h1,
 .content h2,
 .content h3,
@@ -589,12 +589,12 @@ main {
 .content h6 {
   color: var(--vp-c-text-1);
   font-weight: 600;
-  line-height: 1.4;
   position: relative;
 }
 
 .content h1 {
-  font-size: 32px;
+  font-size: 28px;
+  line-height: 40px;
   margin: 0 0 24px 0;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -602,26 +602,37 @@ main {
 
 .content h2 {
   font-size: 24px;
+  line-height: 32px;
   margin: 48px 0 16px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--vp-c-divider);
-  letter-spacing: -0.01em;
+  padding-top: 24px;
+  border-top: 1px solid var(--vp-c-divider);
+  letter-spacing: -0.02em;
 }
 
 .content h3 {
   font-size: 20px;
-  margin: 32px 0 12px 0;
+  line-height: 28px;
+  margin: 32px 0 0;
+  letter-spacing: -0.01em;
 }
 
 .content h4 {
   font-size: 18px;
-  margin: 24px 0 8px 0;
+  line-height: 24px;
+  margin: 24px 0 0;
+  letter-spacing: -0.01em;
 }
 
 .content h5,
 .content h6 {
   font-size: 16px;
-  margin: 20px 0 8px 0;
+  margin: 20px 0 0;
+}
+
+@media (min-width: 768px) {
+  .content h1 {
+    font-size: 32px;
+  }
 }
 
 /* 标题锚点（VitePress hover 出现 #） */
@@ -655,7 +666,7 @@ main {
 .content p {
   margin: 0 0 16px 0;
   line-height: 1.75;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--vp-c-text-1);
 }
 
@@ -664,7 +675,7 @@ main {
   background: var(--vp-c-bg-soft);
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: var(--vp-code-font-size, 0.875em);
   font-family: var(--vp-font-family-mono);
   color: var(--vp-c-brand-1);
   border: 1px solid var(--vp-c-divider);
@@ -673,22 +684,23 @@ main {
 
 /* 代码块 */
 .content pre {
-  padding: 20px;
+  padding: 20px 0;
   overflow-x: auto;
   margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: var(--vp-code-font-size, 0.875em);
+  line-height: var(--vp-code-line-height, 1.7);
   border-radius: 0 0 8px 8px;
   background: var(--vp-c-bg-soft);
 }
 
 .content pre code {
   background: none;
-  padding: 0;
+  padding: 0 24px;
   border: none;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: inherit;
+  line-height: inherit;
   font-family: var(--vp-font-family-mono);
+  color: var(--vp-c-text-2);
 }
 
 /* VitePress 风格代码块容器 */
@@ -773,7 +785,7 @@ main {
 
 .content li {
   margin-bottom: 6px;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--vp-c-text-1);
 }
 
@@ -784,11 +796,16 @@ main {
 /* 引用块 */
 .content blockquote {
   border-left: 4px solid var(--vp-c-brand-1);
-  padding: 12px 20px;
+  padding: 8px 16px;
   margin: 20px 0;
   background: var(--vp-c-bg-soft);
   border-radius: 0 8px 8px 0;
-  font-size: 15px;
+}
+
+.content blockquote p {
+  margin: 4px 0;
+  font-size: 16px;
+  color: var(--vp-c-text-2);
 }
 
 .content blockquote p {
