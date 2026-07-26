@@ -95,8 +95,8 @@ fn preprocess_code_groups(content: &str) -> String {
             let highlighted_clean = highlighted.replacen(" style=\"background-color:#002b36;\"", "", 1);
 
             blocks_html.push_str(&format!(
-                "<div class=\"code-block{}\"><div class=\"vp-code-block-title\"><div class=\"vp-code-block-title-bar\"><span class=\"vp-code-block-title-text\">{}</span></div><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button>{}</div></div>",
-                active_class, title, lang, highlighted_clean
+                "<div class=\"code-block{}\"><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button>{}</div></div>",
+                active_class, lang, highlighted_clean
             ));
 
             tab_idx += 1;

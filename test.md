@@ -73,5 +73,31 @@ A link: [mdr on GitHub](https://github.com/titor/mdr)
 
 ---
 
+
+::: code-group
+
+```js [config.js]
+/**
+ * @type {import('vitepress').UserConfig}
+ */
+const config = {
+  // ...
+}
+
+export default config
+```
+
+```ts [config.ts]
+import type { UserConfig } from 'vitepress'
+
+const config: UserConfig = {
+  // ...
+}
+
+export default config
+```
+
+:::
+
 > "The journey of a thousand miles begins with a single step."
 > — Lao Tzu
