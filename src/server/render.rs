@@ -88,6 +88,7 @@ pub fn markdown_to_html(content: &str) -> String {
 
     // Wrap standalone code blocks + heading anchors
     let html = wrap_code_blocks(&html);
+    let html = wrap_tables(&html);
     add_header_anchors(&html)
 }
 
@@ -277,6 +278,35 @@ fn wrap_code_blocks(html: &str) -> String {
             "<div class=\"vp-code-block-title\"><div class=\"vp-code-block-title-bar\"><span class=\"vp-code-block-title-text\">{}</span></div><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button>{}</div></div>",
             lang_label, lang_label, block
         ));
+    }
+
+    out.push_str(rest);
+    out
+}
+
+// ── table wrapper ──────────────────────────────────────────────────
+
+/// Wrap <table> in a scrollable div to prevent layout breakage.
+fn wrap_tables(html: &str) -> String {
+    let mut out = String::with_capacity(html.len() + 1024);
+    let mut rest = html;
+
+    while let Some(ts) = rest.find("<table") {
+        out.push_str(&rest[..ts]);
+        rest = &rest[ts..];
+
+        // Find closing </table>
+        let end = match rest.find("</table>") {
+            Some(e) => e + 8,
+            None => { out.push_str(rest); break; }
+        };
+
+        let table = &rest[..end];
+        rest = &rest[end..];
+
+        out.push_str("<div class=\"table-wrapper\">");
+        out.push_str(table);
+        out.push_str("</div>");
     }
 
     out.push_str(rest);

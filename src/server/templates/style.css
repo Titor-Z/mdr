@@ -949,16 +949,32 @@ main {
 .content .custom-block.important .custom-block-title { color: var(--vp-c-important-1); }
 .content .custom-block.note .custom-block-title { color: var(--vp-c-default-1); }
 
+/* 表格滚动容器 */
+.content .table-wrapper {
+  overflow-x: auto;
+  margin: 20px 0;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+}
+
+.content .table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.content .table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--vp-c-border);
+  border-radius: 3px;
+}
+
 /* 表格 */
 .content table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin: 20px 0;
   font-size: 14px;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
-  overflow: hidden;
+  margin: 0;
+  border: none;
+  border-radius: 0;
 }
 
 .content th,
@@ -979,6 +995,7 @@ main {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .content tr:nth-child(even) td {
