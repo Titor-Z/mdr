@@ -909,7 +909,6 @@ main {
 .content .custom-block.details {
   border-color: var(--vp-c-default-1);
   background: var(--vp-c-bg-soft);
-}
   background: var(--vp-c-danger-soft);
 }
 

@@ -23,6 +23,26 @@
 - 段落自动换行（复用 wrap_spans，按视窗宽度折行）
 - 列表项自动换行（首行 bullet，后续缩进）
 - 任务列表：☐ 未选中 / ☑ 已选中，支持嵌套
+
+**VitePress 风格页面**
+- 完整 CSS 变量体系（`--vp-c-*`）：brand / tip / success / warning / danger / caution
+- 页面导航（On This Page）：小屏下拉菜单 + 大屏右侧固定栏（断点 1280px）
+- 右侧目录导航（toc-sidebar），窄屏可折叠按钮「页面导航 ▾」
+- 响应式：< 768px 手机布局、768-1280px 平板、≥ 1280px 桌面三档
+- 开发模式 `MDR_DEV=1`：CSS/JS/模板从文件系统加载，改完重启即可无需编译
+
+**VitePress 风格代码块**
+- 双层布局：标题栏（语言名）+ 代码区
+- 右上角悬浮复制按钮
+- 代码组（`::: code-group`）标签页切换，支持 `\`\`js [config.js]` 语法
+- 自定义容器：info / tip / warning / danger / caution / important / note / details
+  - 支持自定义标题 `::: danger STOP`
+  - details 用 `<details><summary>` 实现折叠
+- 代码高亮使用 comrak SyntectAdapter 官方插件
+- 语言别名映射：ts→js, py→python, sh→bash
+- 字体尺寸对齐 VitePress（h1: 28-32px, 正文: 16px, code: 0.875em）
+
+**交互和体验**
 - 鼠标框选文字（Shift+click 绕过鼠标捕获）
 - Ctrl+点击打开链接（检测行内 URL，调用系统浏览器）
 - 鼠标捕获开关（`Ctrl+m` 切换）
@@ -35,9 +55,14 @@
 - 中文表格对齐（改用 unicode-width 计算显示宽度）
 - 表格右侧边框被滚动条遮挡（预留列宽）
 - 段落和表格右边缘与滚动条重叠（统一 viewport - 2）
+- 代码块 pre 内联背景色移除，改由 CSS 控制
+- 代码块语言标签偏移（class="language-" 长度 16 误写 17）
+- 代码组第二个代码块丢失高亮（wrap_code_blocks 重复包装）
+- 自定义容器预处理（trim_start_matches 残留空格导致类型解析错误）
 
 #### 依赖变更
 - 新增 `unicode-width = "0.2"`
+- 新增 `axum`, `tokio`, `minijinja`, `tower-http`, `serde`
 
 ### v0.1.0 (2026-07-26)
 
@@ -89,20 +114,30 @@
 | 卡片样式 | 选中蓝色竖线 + 蓝色文字, 未选中仅缩进 | P2 |
 | 底部菜单栏 | 无背景, ` · ` 分隔, 蓝色 MDR logo | P2 |
 | 日期格式 | 中文月份 "25 7月 2026  17:05" | P2 |
-| CI/CD | 10 个单元测试 | P1 |
+| CI/CD | 18 个单元测试 | P1 |
+| HTTP 服务器 | `mdr serve --port 8080`（axum + minijinja） | P1 |
+| VitePress CSS 变量 | 完整 `--vp-c-*` 体系，暗色/亮色 | P1 |
+| 页面导航 | On This Page：小屏下拉/大屏右侧边栏 | P1 |
+| 响应式布局 | 三档断点：768/1280/1440 | P2 |
+| 开发模式 | `MDR_DEV=1` 从文件系统加载模板 | P2 |
+| 代码块标题栏 | 双层布局：语言标题 + 代码区 + 复制按钮 | P1 |
+| 代码组 | 标签页切换 `::: code-group` | P1 |
+| 自定义容器 | info/tip/warning/danger/details 等 | P1 |
+| 字体对齐 VitePress | h1:28-32px, 正文:16px, code:0.875em | P2 |
 
 ### ❌ 未完成
 
 | 功能 | 说明 | 优先级 |
 |------|------|--------|
-| HTTP 服务器 | `mdr serve` — 通过 Web 浏览 Markdown 文件 | P0 |
-| 配置文件 | `~/.config/mdr/config.toml` | P2 |
-| 脚注 / 任务列表 | 额外 Markdown 语法 | P3 |
-| 脚注 / 任务列表 | 额外 Markdown 语法 | P3 |
+| SSE 热重载 | 文件监听 + 自动刷新浏览器 | P2 |
+| 配置文件 | `~/.config/mdr/config.toml` | P3 |
+| 双主题代码高亮 | Shiki 风格 --shiki-light/--shiki-dark | P2 |
+| 脚注 / 定义列表 | 额外 Markdown 语法 | P3 |
 | 行跳转 | `:` 进入行号跳转 | P2 |
 | 正则搜索 | 搜索支持正则表达式 | P3 |
 | 图片渲染 | 终端内渲染图片（需 kitty/protocol 支持） | P3 |
 | 导出 PDF | 将 Markdown 导出为 PDF | P3 |
+| 发布 | crates.io + Homebrew | P3 |
 
 ### 🔮 待定
 
@@ -373,6 +408,15 @@ span.style = new_style;
 
 **教训**: `Constraint::Length(N)` 布局下，内部元素总高度不能超过 N 行。
 
+### 4.17 自定义容器类型解析 — trim_start_matches 残留空格
+
+**问题**: `trim_start_matches(':')` 移除 `:::` 后留下空格，导致 `splitn` 把空格
+当分隔符，类型名变空字符串。
+
+**修复**: 加 `.trim()` 再 split。
+
+**教训**: 字符串清理要完整，不能只 trim 部分字符。
+
 ---
 
 ## 5. 编码规范
@@ -462,4 +506,4 @@ impl App {
 ---
 
 > 上次更新: 2026-07-26
-> 下一版本计划: v0.3.0 — HTTP 服务器
+> 下一版本计划: v0.3.0 — SSE 热重载 + 双主题代码高亮
