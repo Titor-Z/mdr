@@ -20,14 +20,35 @@ function toggleTheme() {
   setTheme(next);
 }
 
-// 窄屏 ToC 折叠切换
+// 窄屏 ToC 弹出层
 function toggleTocMobile() {
-  const panel = document.getElementById('toc-mobile');
+  const overlay = document.getElementById('toc-mobile');
   const chevron = document.getElementById('toc-chevron');
-  if (!panel || !chevron) return;
-  const isOpen = panel.classList.toggle('open');
+  if (!overlay || !chevron) return;
+  const isOpen = overlay.classList.toggle('open');
   chevron.classList.toggle('open', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
 }
+
+function closeTocMobile() {
+  const overlay = document.getElementById('toc-mobile');
+  const chevron = document.getElementById('toc-chevron');
+  if (!overlay || !chevron) return;
+  overlay.classList.remove('open');
+  chevron.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeTocMobileOutside(event) {
+  if (event.target === event.currentTarget) {
+    closeTocMobile();
+  }
+}
+
+// 按下 Esc 关闭 ToC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeTocMobile();
+});
 
 // 页面加载时恢复主题
 document.addEventListener('DOMContentLoaded', () => {
