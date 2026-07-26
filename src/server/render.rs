@@ -107,7 +107,7 @@ fn preprocess_code_groups(content: &str) -> String {
             };
 
             blocks_html.push_str(&format!(
-                "<div class=\"code-block{}\"><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button><pre><code>{}</code></pre></div></div>",
+                "<div class=\"code-block{}\"><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button><pre data-cg=\"1\"><code>{}</code></pre></div></div>",
                 active_class, lang, highlighted_code
             ));
 
@@ -213,11 +213,8 @@ fn wrap_code_blocks(html: &str) -> String {
         out.push_str(&rest[..ps]);
         rest = &rest[ps..];
 
-        // Check if this <pre> is already inside a code-block (from code groups)
-        let inside_code_block = out.rfind("code-block").map_or(false, |open| {
-            out.rfind("</div></div>").map_or(true, |close| open > close)
-        });
-        if inside_code_block {
+        // Skip <pre> tags inside code groups (marked with data-cg="1")
+        if rest.starts_with("<pre data-cg=\"1\"") {
             let end = match rest.find("</pre>") {
                 Some(e) => e + 6,
                 None => { out.push_str(rest); break; }
