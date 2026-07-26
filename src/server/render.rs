@@ -80,23 +80,35 @@ fn preprocess_code_groups(content: &str) -> String {
                 active_class, title, title
             ));
 
-            // Highlight code using syntect
+            // Highlight code using syntect (matching comrak adapter format)
             let ss = syntect::parsing::SyntaxSet::load_defaults_newlines();
             let ts = syntect::highlighting::ThemeSet::load_defaults();
             let theme = &ts.themes["Solarized (dark)"];
-            let highlighted = if let Some(syn) = ss.find_syntax_by_token(&lang) {
-                syntect::html::highlighted_html_for_string(code, &ss, syn, theme)
-                    .unwrap_or_else(|_| format!("<pre><code>{}</code></pre>", esc_html(code)))
+
+            let highlighted_code = if let Some(syn) = ss.find_syntax_by_token(&lang) {
+                use syntect::easy::HighlightLines;
+                use syntect::html::append_highlighted_html_for_styled_line;
+                use syntect::util::LinesWithEndings;
+
+                let mut highlighter = HighlightLines::new(syn, theme);
+                let bg = theme.settings.background.unwrap_or(syntect::highlighting::Color::WHITE);
+                let mut output = String::new();
+                for line in LinesWithEndings::from(code) {
+                    let regions = highlighter.highlight_line(line, &ss).unwrap_or_default();
+                    append_highlighted_html_for_styled_line(
+                        &regions[..],
+                        syntect::html::IncludeBackground::IfDifferent(bg),
+                        &mut output,
+                    ).ok();
+                }
+                output
             } else {
-                format!("<pre><code>{}</code></pre>", esc_html(code))
+                esc_html(code)
             };
 
-            // Strip inline style from <pre>
-            let highlighted_clean = highlighted.replacen(" style=\"background-color:#002b36;\"", "", 1);
-
             blocks_html.push_str(&format!(
-                "<div class=\"code-block{}\"><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button>{}</div></div>",
-                active_class, lang, highlighted_clean
+                "<div class=\"code-block{}\"><div class=\"language-{}\"><button class=\"copy\" title=\"复制代码\"></button><pre><code>{}</code></pre></div></div>",
+                active_class, lang, highlighted_code
             ));
 
             tab_idx += 1;
