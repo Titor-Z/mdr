@@ -734,24 +734,16 @@ main {
 }
 
 .language- .lang {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--vp-c-text-3);
-  text-transform: uppercase;
-  user-select: none;
-  pointer-events: none;
+  display: none;
 }
 
 .language- .copy {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   z-index: 5;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 6px;
   background: var(--vp-c-bg-soft);
@@ -769,24 +761,11 @@ main {
 
 .language- .copy::before {
   content: "📋";
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .language- .copy[data-copied]::before {
   content: "✅";
-}
-
-/* 带语言名的容器 */
-.language-rust .lang,
-.language-python .lang,
-.language-javascript .lang,
-.language-typescript .lang,
-.language-json .lang,
-.language-bash .lang,
-.language-shell .lang,
-.language-html .lang,
-.language-css .lang {
-  display: block;
 }
 
 /* 列表 */
