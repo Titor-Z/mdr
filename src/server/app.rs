@@ -9,7 +9,9 @@ use axum::response::Html;
 use axum::routing::get;
 use axum::Router;
 use minijinja::Environment;
+use notify::Watcher as _;
 use serde::{Deserialize, Serialize};
+use tokio::sync::broadcast;
 use walkdir::WalkDir;
 
 struct AppState {
@@ -17,6 +19,7 @@ struct AppState {
     docs: Vec<DocInfo>,
     serve_dir: PathBuf,
     theme: AtomicU16,
+    reload_tx: broadcast::Sender<()>,
 }
 
 /// Document metadata for templates.
@@ -54,11 +57,42 @@ pub async fn start(port: u16, dir: String) {
         eprintln!("  [dev] 从文件系统加载模板");
     }
 
+    // SSE 广播通道
+    let (reload_tx, _) = broadcast::channel::<()>(16);
+
+    // 开发模式：文件监听 + SSE 热重载
+    if std::env::var("MDR_DEV").is_ok() {
+        let watch_dir = dir.clone();
+        let tx = reload_tx.clone();
+        std::thread::spawn(move || {
+            use std::sync::mpsc;
+            let (file_tx, file_rx) = mpsc::channel();
+            let mut watcher = match notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| {
+                if let Ok(_) = res {
+                    let _ = file_tx.send(());
+                }
+            }) {
+                Ok(w) => w,
+                Err(_) => return,
+            };
+            let _ = watcher.watch(&watch_dir, notify::RecursiveMode::Recursive);
+            // Debounce: collect events within 500ms windows
+            loop {
+                let _ = file_rx.recv();
+                // Drain any pending events within 500ms
+                while let Ok(_) = file_rx.recv_timeout(std::time::Duration::from_millis(500)) {}
+                let _ = tx.send(());
+            }
+        });
+        eprintln!("  [dev] 文件监听已启动，修改文件后浏览器自动刷新");
+    }
+
     let state = Arc::new(AppState {
         env,
         docs,
         serve_dir: dir,
         theme: AtomicU16::new(0),
+        reload_tx,
     });
 
     // 开发模式：CSS/JS 也从文件系统加载
@@ -77,6 +111,7 @@ pub async fn start(port: u16, dir: String) {
     let app = Router::new()
         .route("/", get(index_page))
         .route("/docs/{*path}", get(doc_page))
+        .route("/events", get(sse_handler))
         .route("/assets/style.css", get(move || async move {
             ([(axum::http::header::CONTENT_TYPE, "text/css; charset=utf-8")], assets_css)
         }))
@@ -147,6 +182,28 @@ async fn doc_page(
         })
         .unwrap();
     Html(html)
+}
+
+// ── SSE 热重载 ─────────────────────────────────────────────────────
+
+use axum::response::sse::Event;
+use axum::response::Sse;
+use futures::stream::StreamExt;
+use tokio_stream::wrappers::BroadcastStream;
+
+async fn sse_handler(
+    State(state): State<Arc<AppState>>,
+) -> Sse<impl futures::Stream<Item = Result<Event, std::convert::Infallible>>> {
+    let rx = state.reload_tx.subscribe();
+    let stream = BroadcastStream::new(rx).map(|r| match r {
+        Ok(_) | Err(_) => Ok(Event::default().data("reload")),
+    });
+
+    Sse::new(stream).keep_alive(
+        axum::response::sse::KeepAlive::new()
+            .interval(std::time::Duration::from_secs(15))
+            .text("keep-alive"),
+    )
 }
 
 /// Scan a directory for .md files recursively (max depth 5).

@@ -107,8 +107,22 @@ function closePageNavOnOutside(event) {
 
 document.addEventListener('click', closePageNavOnOutside);
 
-// 页面加载时恢复主题
+// SSE 热重载
+function connectSSE() {
+  const evtSource = new EventSource('/events');
+  evtSource.onmessage = (e) => {
+    if (e.data === 'reload') {
+      location.reload();
+    }
+  };
+  evtSource.onerror = () => {
+    setTimeout(connectSSE, 3000);
+  };
+}
+
+// 页面加载时恢复主题 + 连接热重载
 document.addEventListener('DOMContentLoaded', () => {
   const saved = localStorage.getItem('mdr-theme');
   if (saved) setTheme(saved);
+  connectSSE();
 });
