@@ -14,8 +14,10 @@ fn main() -> Result<()> {
 
     match &cli.command {
         Some(mdr::cli::Commands::Serve { port, dir }) => {
-            eprintln!("Server mode is not yet implemented.");
-            eprintln!("Would serve markdown files from '{}' on port {}", dir, port);
+            let port = *port;
+            let dir = dir.clone();
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(mdr::server::app::start(port, dir));
             Ok(())
         }
         None => {

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="doc-layout">
+  <nav class="sidebar">
+    <ul>
+    {% for doc in all_docs %}
+      <li>
+        <a href="/docs/{{ doc.path }}"
+           class="{% if doc.path == current_path %}active{% endif %}">
+          {{ doc.path }}
+        </a>
+      </li>
+    {% endfor %}
+    </ul>
+  </nav>
+
+  <article class="content">
+    {{ content | safe }}
+  </article>
+</div>
+{% endblock %}

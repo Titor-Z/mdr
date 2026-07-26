@@ -23,7 +23,7 @@
 ### 文件选择器（首页）
 
 ```
-  ████████ MDR ████████
+   █ MDR █
 
    10 documents · page 1
 
@@ -91,8 +91,12 @@ mdr
 # 显示行号
 mdr -l README.md
 
-# HTTP 服务器（即将推出）
+# HTTP 服务器
+
+```bash
 mdr serve --port 8080
+mdr serve --port 8080 --dir ./docs
+```
 ```
 
 ### 快捷键
@@ -140,7 +144,7 @@ mdr serve --port 8080
 - ✅ 任务列表（☐/☑）
 - ✅ 鼠标交互
 - ✅ 搜索匹配高亮
-- 🚧 HTTP 服务器（`mdr serve`）— 开发中
+- ✅ HTTP 服务器（`mdr serve`）
 - 📝 配置文件支持 — 计划中
 
 ---

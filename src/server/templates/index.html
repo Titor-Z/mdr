@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}首页{% endblock %}
+
+{% block content %}
+<div class="doc-count">{{ docs | length }} 个文档</div>
+
+<div class="card-list">
+{% for doc in docs %}
+  <div class="card">
+    <span class="card-bar"></span>
+    <div class="card-body">
+      <a href="/docs/{{ doc.path }}" class="card-title">{{ doc.path }}</a>
+      <span class="card-date">{{ doc.modified }}</span>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

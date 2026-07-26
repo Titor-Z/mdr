@@ -1,0 +1,310 @@
+/* === 亮色主题（默认）=== */
+:root {
+  --bg: #ffffff;
+  --bg-card: #f5f5f5;
+  --bg-code: #f0f0f0;
+  --fg: #1a1a2e;
+  --fg-muted: #888;
+  --fg-link: #0064C8;
+  --border: #ddd;
+  --bar-color: #0064C8;
+  --sidebar-bg: #fafafa;
+  --header-bg: #0064C8;
+  --header-fg: #ffffff;
+}
+
+/* === 暗色主题 === */
+[data-theme="dark"] {
+  --bg: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-code: #0f3460;
+  --fg: #e0e0e0;
+  --fg-muted: #888;
+  --fg-link: #4fc3f7;
+  --border: #2a2a4a;
+  --bar-color: #4fc3f7;
+  --sidebar-bg: #16213e;
+  --header-bg: #0d1b2a;
+  --header-fg: #e0e0e0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === 顶栏 === */
+header {
+  background: var(--header-bg);
+  color: var(--header-fg);
+  padding: 16px 32px;
+  flex-shrink: 0;
+}
+
+.header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--header-fg);
+  text-decoration: none;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* === 主内容区 === */
+main {
+  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px;
+  width: 100%;
+}
+
+/* === 首页 — 文档计数 === */
+.doc-count {
+  font-size: 14px;
+  color: var(--fg-muted);
+  margin-bottom: 24px;
+}
+
+/* === 首页 — 卡片列表 === */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.card {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.card:last-child {
+  border-bottom: none;
+}
+
+.card-bar {
+  flex-shrink: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--bar-color);
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-link);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-title:hover {
+  text-decoration: underline;
+}
+
+.card-date {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+/* === 详情页 — 左右布局 === */
+.doc-layout {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.sidebar {
+  flex-shrink: 0;
+  width: 220px;
+  background: var(--sidebar-bg);
+  border-radius: 8px;
+  padding: 16px;
+  position: sticky;
+  top: 16px;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  margin-bottom: 4px;
+}
+
+.sidebar a {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--fg);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar a:hover {
+  background: var(--bg-card);
+}
+
+.sidebar a.active {
+  background: var(--bar-color);
+  color: #fff;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* === Markdown 内容样式 === */
+.content h1 { font-size: 26px; margin: 0 0 16px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.content h2 { font-size: 22px; margin: 28px 0 12px 0; }
+.content h3 { font-size: 18px; margin: 24px 0 8px 0; }
+.content h4, .content h5, .content h6 { font-size: 16px; margin: 20px 0 8px 0; }
+
+.content p { margin: 0 0 12px 0; }
+
+.content code {
+  background: var(--bg-code);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+.content pre {
+  background: var(--bg-code);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.content pre code {
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.content ul, .content ol {
+  margin: 8px 0 12px 0;
+  padding-left: 24px;
+}
+
+.content li {
+  margin-bottom: 4px;
+}
+
+.content blockquote {
+  border-left: 4px solid var(--bar-color);
+  padding: 8px 16px;
+  margin: 16px 0;
+  background: var(--bg-card);
+  border-radius: 0 8px 8px 0;
+}
+
+.content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.content th, .content td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.content th {
+  background: var(--bg-card);
+  font-weight: 600;
+}
+
+.content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+.content a {
+  color: var(--fg-link);
+}
+
+.content img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+/* task list checkbox */
+.content input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+/* === 底栏 === */
+footer {
+  background: var(--sidebar-bg);
+  border-top: 1px solid var(--border);
+  padding: 12px 32px;
+  flex-shrink: 0;
+}
+
+.footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+#theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#theme-toggle:hover {
+  background: var(--bg-card);
+}

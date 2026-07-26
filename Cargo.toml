@@ -20,3 +20,8 @@ syntect = { version = "5", default-features = false, features = ["default-onig"]
 anyhow = "1"
 walkdir = "2"
 unicode-width = "0.2"
+axum = "0.8.9"
+tokio = { version = "1.53.1", features = ["full"] }
+minijinja = "2.21.0"
+tower-http = { version = "0.7.0", features = ["fs"] }
+serde = { version = "1.0.229", features = ["derive"] }
