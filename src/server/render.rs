@@ -85,7 +85,15 @@ fn preprocess_code_groups(content: &str) -> String {
             let ts = syntect::highlighting::ThemeSet::load_defaults();
             let theme = &ts.themes["Solarized (dark)"];
 
-            let highlighted_code = if let Some(syn) = ss.find_syntax_by_token(&lang) {
+            // Map common language aliases
+            let lang_token = match lang.as_str() {
+                "ts" | "typescript" => "js",
+                "py" => "python",
+                "sh" => "bash",
+                other => other,
+            };
+
+            let highlighted_code = if let Some(syn) = ss.find_syntax_by_token(lang_token) {
                 use syntect::easy::HighlightLines;
                 use syntect::html::append_highlighted_html_for_styled_line;
                 use syntect::util::LinesWithEndings;
