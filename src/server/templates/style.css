@@ -1,56 +1,189 @@
-/* === 亮色主题（VitePress 风格）=== */
+/* =============================================
+   VitePress 风格 CSS 变量体系
+   完全参照 VitePress 的设计规范
+   ============================================= */
+
+/* === 亮色主题 === */
 :root {
-  --bg: #ffffff;
-  --bg-soft: #f6f6f7;
-  --bg-mute: #f2f2f3;
-  --bg-card: #f5f5f5;
-  --bg-code: #f0f0f0;
-  --bg-code-inline: #f0f0f0;
-  --fg: #3c3c43;
-  --fg-muted: #8e8e93;
-  --fg-link: #0064C8;
-  --fg-heading: #1a1a2e;
-  --border: #e2e2e3;
-  --border-soft: #e8e8e9;
-  --bar-color: #0064C8;
-  --sidebar-bg: #fafafa;
-  --header-bg: #ffffff;
-  --header-fg: #1a1a2e;
-  --header-border: #e2e2e3;
-  --code-header-bg: #e8e8e9;
-  --custom-block-info: #0064C8;
-  --custom-block-tip: #10b981;
-  --custom-block-warning: #f59e0b;
-  --custom-block-danger: #ef4444;
-  --custom-block-bg: #f6f6f7;
+  --vp-c-white: #ffffff;
+  --vp-c-black: #000000;
+
+  /* Neutral */
+  --vp-c-neutral: var(--vp-c-black);
+  --vp-c-neutral-inverse: var(--vp-c-white);
+
+  /* Gray */
+  --vp-c-gray-1: #dddde3;
+  --vp-c-gray-2: #e4e4e9;
+  --vp-c-gray-3: #ebebef;
+  --vp-c-gray-soft: #8e96aa24;
+
+  /* Indigo (brand) */
+  --vp-c-indigo-1: #3451b2;
+  --vp-c-indigo-2: #3a5ccc;
+  --vp-c-indigo-3: #5672cd;
+  --vp-c-indigo-soft: #646cff24;
+
+  /* Purple (important) */
+  --vp-c-purple-1: #6f42c1;
+  --vp-c-purple-2: #7e4cc9;
+  --vp-c-purple-3: #8e5cd9;
+  --vp-c-purple-soft: #9f7aea24;
+
+  /* Green (success) */
+  --vp-c-green-1: #18794e;
+  --vp-c-green-2: #299764;
+  --vp-c-green-3: #30a46c;
+  --vp-c-green-soft: #10b98124;
+
+  /* Yellow (warning) */
+  --vp-c-yellow-1: #915930;
+  --vp-c-yellow-2: #946300;
+  --vp-c-yellow-3: #9f6a00;
+  --vp-c-yellow-soft: #eab30824;
+
+  /* Red (danger) */
+  --vp-c-red-1: #b8272c;
+  --vp-c-red-2: #d5393e;
+  --vp-c-red-3: #e0575b;
+  --vp-c-red-soft: #f43f5e24;
+
+  /* Sponsor */
+  --vp-c-sponsor: #db2777;
+
+  /* Background */
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-alt: #f6f6f7;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f6f6f7;
+
+  /* Border & Divider */
+  --vp-c-border: #c2c2c4;
+  --vp-c-divider: #e2e2e3;
+  --vp-c-gutter: #e2e2e3;
+
+  /* Text */
+  --vp-c-text-1: #3c3c43;
+  --vp-c-text-2: #67676c;
+  --vp-c-text-3: #929295;
+
+  /* Semantic aliases */
+  --vp-c-default-1: var(--vp-c-gray-1);
+  --vp-c-default-2: var(--vp-c-gray-2);
+  --vp-c-default-3: var(--vp-c-gray-3);
+  --vp-c-default-soft: var(--vp-c-gray-soft);
+
+  --vp-c-brand-1: var(--vp-c-indigo-1);
+  --vp-c-brand-2: var(--vp-c-indigo-2);
+  --vp-c-brand-3: var(--vp-c-indigo-3);
+  --vp-c-brand-soft: var(--vp-c-indigo-soft);
+
+  --vp-c-tip-1: var(--vp-c-brand-1);
+  --vp-c-tip-2: var(--vp-c-brand-2);
+  --vp-c-tip-3: var(--vp-c-brand-3);
+  --vp-c-tip-soft: var(--vp-c-brand-soft);
+
+  --vp-c-note-1: var(--vp-c-brand-1);
+  --vp-c-note-2: var(--vp-c-brand-2);
+  --vp-c-note-3: var(--vp-c-brand-3);
+  --vp-c-note-soft: var(--vp-c-brand-soft);
+
+  --vp-c-success-1: var(--vp-c-green-1);
+  --vp-c-success-2: var(--vp-c-green-2);
+  --vp-c-success-3: var(--vp-c-green-3);
+  --vp-c-success-soft: var(--vp-c-green-soft);
+
+  --vp-c-important-1: var(--vp-c-purple-1);
+  --vp-c-important-2: var(--vp-c-purple-2);
+  --vp-c-important-3: var(--vp-c-purple-3);
+  --vp-c-important-soft: var(--vp-c-purple-soft);
+
+  --vp-c-warning-1: var(--vp-c-yellow-1);
+  --vp-c-warning-2: var(--vp-c-yellow-2);
+  --vp-c-warning-3: var(--vp-c-yellow-3);
+  --vp-c-warning-soft: var(--vp-c-yellow-soft);
+
+  --vp-c-danger-1: var(--vp-c-red-1);
+  --vp-c-danger-2: var(--vp-c-red-2);
+  --vp-c-danger-3: var(--vp-c-red-3);
+  --vp-c-danger-soft: var(--vp-c-red-soft);
+
+  --vp-c-caution-1: var(--vp-c-red-1);
+  --vp-c-caution-2: var(--vp-c-red-2);
+  --vp-c-caution-3: var(--vp-c-red-3);
+  --vp-c-caution-soft: var(--vp-c-red-soft);
 }
 
-/* === 暗色主题（VitePress 风格）=== */
-[data-theme="dark"] {
-  --bg: #1b1b1f;
-  --bg-soft: #202127;
-  --bg-mute: #252529;
-  --bg-card: #202127;
-  --bg-code: #1e1e20;
-  --bg-code-inline: #2a2a2e;
-  --fg: #e3e3e7;
-  --fg-muted: #8e8e93;
-  --fg-link: #4fc3f7;
-  --fg-heading: #f0f0f4;
-  --border: #2e2e32;
-  --border-soft: #252529;
-  --bar-color: #4fc3f7;
-  --sidebar-bg: #202127;
-  --header-bg: #1b1b1f;
-  --header-fg: #f0f0f4;
-  --header-border: #2e2e32;
-  --code-header-bg: #252529;
-  --custom-block-info: #4fc3f7;
-  --custom-block-tip: #34d399;
-  --custom-block-warning: #fbbf24;
-  --custom-block-danger: #f87171;
-  --custom-block-bg: #202127;
+/* === 暗色主题 === */
+.dark {
+  --vp-c-neutral: var(--vp-c-white);
+  --vp-c-neutral-inverse: var(--vp-c-black);
+
+  --vp-c-gray-1: #515c67;
+  --vp-c-gray-2: #414853;
+  --vp-c-gray-3: #32363f;
+  --vp-c-gray-soft: #65758529;
+
+  --vp-c-indigo-1: #a8b1ff;
+  --vp-c-indigo-2: #5c73e7;
+  --vp-c-indigo-3: #3e63dd;
+  --vp-c-indigo-soft: #646cff29;
+
+  --vp-c-purple-1: #c8abfa;
+  --vp-c-purple-2: #a879e6;
+  --vp-c-purple-3: #8e5cd9;
+  --vp-c-purple-soft: #9f7aea29;
+
+  --vp-c-green-1: #3dd68c;
+  --vp-c-green-2: #30a46c;
+  --vp-c-green-3: #298459;
+  --vp-c-green-soft: #10b98129;
+
+  --vp-c-yellow-1: #f9b44e;
+  --vp-c-yellow-2: #da8b17;
+  --vp-c-yellow-3: #a46a0a;
+  --vp-c-yellow-soft: #eab30829;
+
+  --vp-c-red-1: #f66f81;
+  --vp-c-red-2: #f14158;
+  --vp-c-red-3: #b62a3c;
+  --vp-c-red-soft: #f43f5e29;
+
+  --vp-c-bg: #1b1b1f;
+  --vp-c-bg-alt: #161618;
+  --vp-c-bg-elv: #202127;
+  --vp-c-bg-soft: #202127;
+
+  --vp-c-border: #3c3f44;
+  --vp-c-divider: #2e2e32;
+  --vp-c-gutter: #000000;
+
+  --vp-c-text-1: #dfdfd6;
+  --vp-c-text-2: #98989f;
+  --vp-c-text-3: #6a6a71;
 }
+
+/* === Fonts === */
+:root {
+  --vp-font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --vp-font-family-mono: ui-monospace, "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace;
+}
+
+/* CJK line-break 优化 */
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) h1,
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) h2,
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) h3,
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) h4,
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) h5,
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) h6,
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) li,
+[lang]:where(:lang(zh), :lang(ja), :lang(ko)) p {
+  line-break: strict;
+}
+
+/* =============================================
+   基础样式
+   ============================================= */
 
 * {
   margin: 0;
@@ -59,35 +192,35 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  background: var(--bg);
-  color: var(--fg);
+  font-family: var(--vp-font-family-base);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
-/* === 顶栏（VitePress 风格 — 细线分隔）=== */
+/* =============================================
+   顶栏 — VitePress 风格 sticky + 毛玻璃
+   ============================================= */
+
 header {
-  background: var(--header-bg);
-  color: var(--header-fg);
+  background: color-mix(in srgb, var(--vp-c-bg) 90%, transparent);
+  color: var(--vp-c-text-1);
   padding: 0 32px;
   height: 56px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--header-border);
+  border-bottom: 1px solid var(--vp-c-divider);
   flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(8px);
-  background: rgba(27, 27, 31, 0.9);
-}
-
-[data-theme="light"] header {
-  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .header-inner {
@@ -102,27 +235,34 @@ header {
 .logo {
   font-size: 20px;
   font-weight: 700;
-  color: var(--fg-heading);
+  color: var(--vp-c-text-1);
   text-decoration: none;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  transition: opacity 0.2s;
 }
 
 .logo:hover {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .subtitle {
   font-size: 13px;
-  color: var(--fg-muted);
+  color: var(--vp-c-text-3);
 }
 
-/* === 主内容区 === */
+/* =============================================
+   主内容区
+   ============================================= */
+
 main {
   flex: 1;
   width: 100%;
 }
 
-/* === 首页 — 文档计数 === */
+/* =============================================
+   首页 — 文档列表
+   ============================================= */
+
 .page-home {
   max-width: 720px;
   margin: 0 auto;
@@ -131,12 +271,11 @@ main {
 
 .doc-count {
   font-size: 14px;
-  color: var(--fg-muted);
+  color: var(--vp-c-text-3);
   margin-bottom: 24px;
   font-weight: 500;
 }
 
-/* === 首页 — 卡片列表（VitePress 风格）=== */
 .card-list {
   display: flex;
   flex-direction: column;
@@ -146,13 +285,13 @@ main {
 .card {
   display: flex;
   gap: 14px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-soft);
-  transition: border-color 0.2s;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  transition: border-color 0.25s;
 }
 
 .card:hover {
-  border-color: var(--fg-link);
+  border-color: var(--vp-c-brand-1);
 }
 
 .card:last-child {
@@ -163,8 +302,8 @@ main {
   flex-shrink: 0;
   width: 3px;
   border-radius: 2px;
-  background: var(--bar-color);
-  opacity: 0.6;
+  background: var(--vp-c-brand-1);
+  opacity: 0.5;
 }
 
 .card-body {
@@ -177,24 +316,27 @@ main {
 .card-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--fg-heading);
+  color: var(--vp-c-text-1);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 0.2s;
+  transition: color 0.25s;
 }
 
 .card-title:hover {
-  color: var(--fg-link);
+  color: var(--vp-c-brand-1);
 }
 
 .card-date {
   font-size: 12px;
-  color: var(--fg-muted);
+  color: var(--vp-c-text-3);
 }
 
-/* === 详情页 — 左右布局（VitePress 风格）=== */
+/* =============================================
+   详情页 — 左右布局
+   ============================================= */
+
 .doc-layout {
   display: flex;
   max-width: 1160px;
@@ -203,7 +345,7 @@ main {
   gap: 0;
 }
 
-/* 左侧边栏（VitePress 风格） */
+/* 左侧边栏 */
 .sidebar {
   flex-shrink: 0;
   width: 240px;
@@ -212,7 +354,7 @@ main {
   top: 56px;
   height: calc(100vh - 56px);
   overflow-y: auto;
-  border-right: 1px solid var(--border-soft);
+  border-right: 1px solid var(--vp-c-divider);
 }
 
 .sidebar ul {
@@ -229,26 +371,26 @@ main {
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--fg-muted);
+  color: var(--vp-c-text-2);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: all 0.2s;
+  transition: all 0.25s;
 }
 
 .sidebar a:hover {
-  color: var(--fg-heading);
-  background: var(--bg-soft);
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-soft);
 }
 
 .sidebar a.active {
-  color: var(--fg-link);
-  background: var(--bg-soft);
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg-soft);
   font-weight: 600;
 }
 
-/* 右侧内容区（VitePress 风格文章） */
+/* 右侧内容区 */
 .content {
   flex: 1;
   min-width: 0;
@@ -256,15 +398,18 @@ main {
   padding: 48px 48px 64px;
 }
 
-/* ========== VitePress 风格文章排版 ========== */
+/* =============================================
+   VitePress 风格文章排版
+   ============================================= */
 
+/* 标题层级 */
 .content h1,
 .content h2,
 .content h3,
 .content h4,
 .content h5,
 .content h6 {
-  color: var(--fg-heading);
+  color: var(--vp-c-text-1);
   font-weight: 600;
   line-height: 1.4;
   position: relative;
@@ -281,7 +426,7 @@ main {
   font-size: 24px;
   margin: 48px 0 16px 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
   letter-spacing: -0.01em;
 }
 
@@ -295,12 +440,13 @@ main {
   margin: 24px 0 8px 0;
 }
 
-.content h5, .content h6 {
+.content h5,
+.content h6 {
   font-size: 16px;
   margin: 20px 0 8px 0;
 }
 
-/* 标题 hover 锚点（VitePress 风格） */
+/* 标题锚点（VitePress hover 出现 #） */
 .content .header-anchor {
   position: absolute;
   left: -24px;
@@ -308,17 +454,19 @@ main {
   transform: translateY(-50%);
   font-size: 16px;
   opacity: 0;
-  color: var(--fg-link);
+  color: var(--vp-c-brand-1);
   text-decoration: none;
-  transition: opacity 0.2s;
+  transition: opacity 0.25s;
   padding: 0 4px;
+  border: none;
+  font-weight: 500;
 }
 
 .content h1:hover .header-anchor,
 .content h2:hover .header-anchor,
 .content h3:hover .header-anchor,
 .content h4:hover .header-anchor {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .content .header-anchor:hover {
@@ -330,32 +478,29 @@ main {
   margin: 0 0 16px 0;
   line-height: 1.75;
   font-size: 15px;
-  color: var(--fg);
-}
-
-.content p:last-child {
-  margin-bottom: 0;
+  color: var(--vp-c-text-1);
 }
 
 /* 行内代码 */
 .content code {
-  background: var(--bg-code-inline);
+  background: var(--vp-c-bg-soft);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 13px;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
-  color: var(--fg-link);
-  border: 1px solid var(--border-soft);
+  font-family: var(--vp-font-family-mono);
+  color: var(--vp-c-brand-1);
+  border: 1px solid var(--vp-c-divider);
+  transition: color 0.25s;
 }
 
-/* 代码块（VitePress 风格） */
+/* 代码块 */
 .content pre {
-  background: var(--bg-code);
+  background: var(--vp-c-bg-soft);
   padding: 20px;
   border-radius: 8px;
   overflow-x: auto;
   margin: 20px 0;
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--vp-c-divider);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -364,13 +509,15 @@ main {
   background: none;
   padding: 0;
   border: none;
-  color: var(--fg);
+  color: var(--vp-c-text-1);
   font-size: 13px;
   line-height: 1.6;
+  font-family: var(--vp-font-family-mono);
 }
 
 /* 列表 */
-.content ul, .content ol {
+.content ul,
+.content ol {
   margin: 8px 0 16px 0;
   padding-left: 24px;
   line-height: 1.75;
@@ -379,51 +526,55 @@ main {
 .content li {
   margin-bottom: 6px;
   font-size: 15px;
+  color: var(--vp-c-text-1);
 }
 
 .content li::marker {
-  color: var(--fg-link);
+  color: var(--vp-c-brand-1);
 }
 
-/* 引用块（VitePress 风格） */
+/* 引用块 */
 .content blockquote {
-  border-left: 4px solid var(--bar-color);
+  border-left: 4px solid var(--vp-c-brand-1);
   padding: 12px 20px;
   margin: 20px 0;
-  background: var(--bg-soft);
+  background: var(--vp-c-bg-soft);
   border-radius: 0 8px 8px 0;
-  color: var(--fg-muted);
   font-size: 15px;
 }
 
 .content blockquote p {
   margin: 4px 0;
-  color: var(--fg-muted);
+  color: var(--vp-c-text-2);
 }
 
-/* === VitePress 自定义容器 === */
+/* VitePress 自定义容器 */
 .content .custom-block {
   margin: 20px 0;
   padding: 16px 20px;
   border-radius: 8px;
   border-left: 4px solid;
-  background: var(--custom-block-bg);
-}
-
-.content .custom-block.info {
-  border-color: var(--custom-block-info);
+  background: var(--vp-c-bg-soft);
 }
 
 .content .custom-block.tip {
-  border-color: var(--custom-block-tip);
+  border-color: var(--vp-c-tip-1);
+  background: var(--vp-c-tip-soft);
+}
+
+.content .custom-block.info {
+  border-color: var(--vp-c-default-1);
+  background: var(--vp-c-default-soft);
 }
 
 .content .custom-block.warning {
-  border-color: var(--custom-block-warning);
+  border-color: var(--vp-c-warning-1);
+  background: var(--vp-c-warning-soft);
 }
 
 .content .custom-block.danger {
-  border-color: var(--custom-block-danger);
+  border-color: var(--vp-c-danger-1);
+  background: var(--vp-c-danger-soft);
 }
 
 .content .custom-block-title {
@@ -431,27 +582,29 @@ main {
   font-size: 14px;
   margin-bottom: 8px;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
-.content .custom-block.info .custom-block-title { color: var(--custom-block-info); }
-.content .custom-block.tip .custom-block-title { color: var(--custom-block-tip); }
-.content .custom-block.warning .custom-block-title { color: var(--custom-block-warning); }
-.content .custom-block.danger .custom-block-title { color: var(--custom-block-danger); }
+.content .custom-block.tip .custom-block-title { color: var(--vp-c-tip-1); }
+.content .custom-block.info .custom-block-title { color: var(--vp-c-default-1); }
+.content .custom-block.warning .custom-block-title { color: var(--vp-c-warning-1); }
+.content .custom-block.danger .custom-block-title { color: var(--vp-c-danger-1); }
 
-/* 表格（VitePress 风格） */
+/* 表格 */
 .content table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   margin: 20px 0;
   font-size: 14px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--vp-c-border);
   border-radius: 8px;
   overflow: hidden;
 }
 
-.content th, .content td {
-  border-bottom: 1px solid var(--border-soft);
+.content th,
+.content td {
+  border-bottom: 1px solid var(--vp-c-divider);
   padding: 10px 16px;
   text-align: left;
 }
@@ -461,32 +614,32 @@ main {
 }
 
 .content th {
-  background: var(--bg-soft);
+  background: var(--vp-c-bg-soft);
   font-weight: 600;
-  color: var(--fg-heading);
+  color: var(--vp-c-text-1);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .content tr:nth-child(even) td {
-  background: var(--bg-soft);
+  background: var(--vp-c-bg-alt);
 }
 
 /* 分割线 */
 .content hr {
   border: none;
   height: 1px;
-  background: var(--border-soft);
+  background: var(--vp-c-divider);
   margin: 32px 0;
 }
 
 /* 链接 */
 .content a {
-  color: var(--fg-link);
+  color: var(--vp-c-brand-1);
   text-decoration: none;
   font-weight: 500;
-  transition: opacity 0.2s;
+  transition: opacity 0.25s;
 }
 
 .content a:hover {
@@ -499,32 +652,31 @@ main {
   max-width: 100%;
   border-radius: 8px;
   margin: 20px 0;
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--vp-c-divider);
 }
 
 /* 任务列表 checkbox */
 .content input[type="checkbox"] {
   margin-right: 8px;
-  accent-color: var(--bar-color);
+  accent-color: var(--vp-c-brand-1);
 }
 
-/* 粗体 / 斜体 */
+/* 粗体 / 斜体 / 删除线 */
 .content strong {
   font-weight: 600;
-  color: var(--fg-heading);
+  color: var(--vp-c-text-1);
 }
 
 .content em {
   font-style: italic;
 }
 
-/* 删除线 */
 .content del {
   text-decoration: line-through;
-  color: var(--fg-muted);
+  color: var(--vp-c-text-3);
 }
 
-/* 水平滚动条美化 */
+/* 滚动条美化 */
 .content pre::-webkit-scrollbar {
   height: 6px;
 }
@@ -534,7 +686,7 @@ main {
 }
 
 .content pre::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--vp-c-border);
   border-radius: 3px;
 }
 
@@ -543,14 +695,17 @@ main {
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--vp-c-border);
   border-radius: 2px;
 }
 
-/* === 底栏 === */
+/* =============================================
+   底栏
+   ============================================= */
+
 footer {
-  background: var(--bg-soft);
-  border-top: 1px solid var(--border-soft);
+  background: var(--vp-c-bg-soft);
+  border-top: 1px solid var(--vp-c-divider);
   padding: 16px 32px;
   flex-shrink: 0;
 }
@@ -562,27 +717,30 @@ footer {
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
-  color: var(--fg-muted);
+  color: var(--vp-c-text-3);
 }
 
 #theme-toggle {
   background: none;
-  border: 1px solid var(--border);
-  color: var(--fg);
+  border: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-1);
   padding: 6px 14px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.25s;
 }
 
 #theme-toggle:hover {
-  background: var(--bg-mute);
-  border-color: var(--fg-muted);
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-text-3);
 }
 
-/* === 响应式 === */
+/* =============================================
+   响应式
+   ============================================= */
+
 @media (max-width: 768px) {
   .sidebar {
     display: none;

@@ -1,10 +1,15 @@
-// 主题切换
+// 主题切换（VitePress 风格，使用 .dark class）
 function getTheme() {
-  return document.documentElement.getAttribute('data-theme') || 'dark';
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
 function setTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
+  const root = document.documentElement;
+  if (theme === 'dark') {
+    root.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+  }
   localStorage.setItem('mdr-theme', theme);
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.textContent = theme === 'dark' ? '🌙 暗色' : '☀️ 亮色';

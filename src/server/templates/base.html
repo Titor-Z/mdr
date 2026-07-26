@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="{{ theme | default(value="dark") }}">
+<html lang="zh-CN"{% if theme == "dark" %} class="dark"{% endif %}>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
