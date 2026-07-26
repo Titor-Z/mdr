@@ -1,6 +1,6 @@
 [package]
 name = "mdr"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "一个现代化的终端 Markdown 渲染器，内置 pager 和 HTTP 服务器"
 authors = ["titor"]
