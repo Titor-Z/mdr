@@ -1,11 +1,11 @@
 use comrak::{markdown_to_html_with_plugins, ComrakOptions, Plugins};
 use comrak::plugins::syntect::SyntectAdapterBuilder;
 use serde::{Deserialize, Serialize};
-use syntect::highlighting::{ThemeSet, Color};
+use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 use syntect::easy::HighlightLines;
 use syntect::util::LinesWithEndings;
-use syntect::html::append_highlighted_html_for_styled_line;
+
 
 /// A heading item for the table of contents.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,23 +59,6 @@ fn highlight_dual_theme(code: &str, lang: &str) -> String {
     }
 
     out.push_str("</code></pre>");
-    out
-}
-
-/// Highlight with single theme for standalone code blocks (used by comrak adapter).
-fn highlight_single(code: &str, lang: &str) -> String {
-    let ss = SyntaxSet::load_defaults_newlines();
-    let ts = ThemeSet::load_defaults();
-    let theme = &ts.themes["base16-ocean.dark"];
-    let syn = ss.find_syntax_by_token(map_lang(lang))
-        .unwrap_or_else(|| ss.find_syntax_plain_text());
-    let mut hl = HighlightLines::new(syn, theme);
-    let bg = theme.settings.background.unwrap_or(Color::WHITE);
-    let mut out = String::new();
-    for line in LinesWithEndings::from(code) {
-        let regions = hl.highlight_line(line, &ss).unwrap_or_default();
-        append_highlighted_html_for_styled_line(&regions[..], syntect::html::IncludeBackground::IfDifferent(bg), &mut out).ok();
-    }
     out
 }
 
