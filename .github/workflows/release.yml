@@ -90,6 +90,20 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 需要获取 tags
+
+      - name: Extract tag message
+        shell: bash
+        run: |
+          TAG="${{ github.ref_name }}"
+          # 取 annotated tag message，不存在则 fallback
+          MSG=$(git tag -l --format='%(contents)' "$TAG" 2>/dev/null || echo "")
+          if [ -z "$MSG" ]; then
+            MSG="# mdr $TAG"
+          fi
+          # printf 保留换行和特殊字符
+          printf '%s\n' "$MSG" > /tmp/release_body.md
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -99,24 +113,32 @@ jobs:
       - name: List artifacts
         run: find artifacts -type f
 
+      - name: Build download table
+        id: table
+        shell: bash
+        run: |
+          cat >> /tmp/release_body.md << 'EOF'
+
+          ---
+
+          ### 下载
+
+          | 文件 | 平台 |
+          |------|------|
+          | `mdr-darwin-x64` | macOS Intel |
+          | `mdr-darwin-arm64` | macOS Apple Silicon |
+          | `mdr-linux-x64` | Linux x86_64 |
+          | `mdr-linux-arm64` | Linux ARM64 |
+          | `mdr-win-x64.exe` | Windows x86_64 |
+          | `mdr-win-arm64.exe` | Windows ARM64 |
+          EOF
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
-          body: |
-            ## mdr ${{ github.ref_name }}
-
-            从 [GitHub Releases] 下载对应平台的二进制文件，解压后直接运行。
-
-            | 文件 | 平台 |
-            |------|------|
-            | `mdr-darwin-x64` | macOS Intel |
-            | `mdr-darwin-arm64` | macOS Apple Silicon |
-            | `mdr-linux-x64` | Linux x86_64 |
-            | `mdr-linux-arm64` | Linux ARM64 |
-            | `mdr-win-x64.exe` | Windows x86_64 |
-            | `mdr-win-arm64.exe` | Windows ARM64 |
+          body_path: /tmp/release_body.md
           files: |
             artifacts/*/*
           fail_on_unmatched_files: false
