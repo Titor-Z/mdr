@@ -7,6 +7,25 @@
 
 ## 1. Changelog
 
+### v0.3.0 (2026-07-27)
+
+**模块重构 + Bug 修复**
+
+#### 重构
+- `render/terminal.rs`（819 行）拆分为 6 个模块：`blocks`、`inline`、`ctx`、`style`、`wrap`、`mod`
+- 模块职责清晰分离：ctx/数据、style/颜色、wrap/换行、inline/行内渲染、blocks/块级渲染
+- 公共 API 路径从 `mdr::render::terminal::*` 简化为 `mdr::render::*`
+
+#### 新增
+- YAML frontmatter 终端渲染：启用 comrak `front_matter_delimiter`，灰色 dim 样式，前后空行
+- YAML frontmatter Web 渲染：解析 `categories`/`tags`/`date`/`updated` 为结构化元数据
+- 文档底部状态栏（`.doc-footer`）：显示「分类：rust / tools」「上一次更新时间：2024-06-15」
+- `markdown_to_html` 返回 `(String, DocumentMeta)` 元组，前端不渲染原始 YAML
+
+#### 修复
+- 文件选择器中文路径截断改用 `UnicodeWidthStr::width()` 而非字节长度 `str::len()`
+- 避免 UTF-8 字节切片 panic（用 `char_indices().rev()` 安全遍历）
+
 ### v0.2.1 (2026-07-26)
 
 **Bug 修复 + UX 改进**
@@ -147,12 +166,14 @@
 | 自定义容器 | info/tip/warning/danger/details 等 | P1 |
 | 字体对齐 VitePress | h1:28-32px, 正文:16px, code:0.875em | P2 |
 | SSE 热重载 | MDR_DEV=1 文件监听 + 浏览器自动刷新 | P2 |
+| 双主题代码高亮 | Shiki 风格 --shiki-light/--shiki-dark | P2 |
+| YAML frontmatter | 终端 dim 渲染 + Web 元数据解析 + 底部状态栏 | P2 |
 
 ### ❌ 未完成
 
 | 功能 | 说明 | 优先级 |
 |------|------|--------|
-| 双主题代码高亮 | Shiki 风格 --shiki-light/--shiki-dark | P2 |
+
 | 配置文件 | `~/.config/mdr/config.toml` | P3 |
 | 脚注 / 定义列表 | 额外 Markdown 语法 | P3 |
 | 行跳转 | `:` 进入行号跳转 | P2 |
@@ -523,6 +544,59 @@ fn pick_markdown_file(state: &mut PickerState) -> Option<String> {
 
 **教训**: 独立函数 + 循环重入的场景，状态必须外提。Rust 的所有权模型恰好保证每个进程的 state 私有——不需要全局变量或文件锁。
 
+### 4.20 文件选择器中文路径截断 — 字节长度 vs 显示宽度
+
+**问题**: 文件选择器中文件名截断使用 `display_path.len()`（字节长度），CJK 路径显示不全或截断位置错误。
+
+```
+// ❌ 错误 — .len() 返回字节长度，"中文文件.md" = 16 字节 ≠ 12 列宽
+if display_path.len() > card_w { ... }
+
+// ✅ 正确 — .width() 返回终端显示宽度
+if UnicodeWidthStr::width(display_path) > card_w { ... }
+```
+
+**更严重的问题**: `&display_path[byte_offset..]` 按字节切片，如果 offset 落在多字节字符中间 → **运行时 panic**。
+
+```
+// ❌ 错误 — 可能 panic
+&display_path[display_path.len().saturating_sub(n)..]
+
+// ✅ 正确 — char_indices().rev() 安全遍历
+for (i, c) in display_path.char_indices().rev() {
+    let cw = UnicodeWidthStr::width(c.to_string().as_str());
+    if tail_w + cw > max_tail { break; }
+    tail_w += cw;
+    trunc_at = i;
+}
+format!("…{}", &display_path[trunc_at..])
+```
+
+**修复**: 改用 `UnicodeWidthStr::width()` + `char_indices().rev()` 安全截断。
+
+**教训**: 涉及文件路径的文本处理，长度计算和切片必须考虑 UTF-8 编码和非 ASCII 字符。
+
+### 4.21 render/terminal.rs 模块拆分
+
+**问题**: `render/terminal.rs` 819 行，render_node 函数内部处理所有块级元素（heading/paragraph/code/list/quote/table 等），内联渲染、颜色工具、换行逻辑全部混在一个文件里，修改单个节点类型需要在大文件中定位。
+
+**方案**: 按职责拆分为 6 个文件：
+
+```
+src/render/
+├── mod.rs    — 公共 API + 测试
+├── ctx.rs    — RenderCtx + LinkInfo
+├── style.rs  — 颜色工具函数
+├── wrap.rs   — 自动换行
+├── inline.rs — 行内渲染
+└── blocks.rs — 块级渲染
+```
+
+关键点：
+- `&'a AstNode<'a>` 生命周期绑定：调用 `.children()` 需要引用生命周期与节点内部生命周期一致
+- `pub(crate)` 可见性：跨子模块的函数用 `pub(crate)` 而非 `pub`
+- `pub use` 重新导出：`LinkInfo`、`render()`、`render_with_width()`、`extract_links()` 在 `mod.rs` 统一公开
+
 ## 5. 编码规范
 
 ### 5.1 注释语言
@@ -609,5 +683,5 @@ impl App {
 
 ---
 
-> 上次更新: 2026-07-26
-> 下一版本计划: v0.3.0 — 双主题代码高亮 + 配置文件
+> 上次更新: 2026-07-27
+> 下一版本计划: v0.3.0 — 配置文件 + 行跳转

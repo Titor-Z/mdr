@@ -6,6 +6,14 @@ use syntect::parsing::SyntaxSet;
 use syntect::easy::HighlightLines;
 use syntect::util::LinesWithEndings;
 
+/// Metadata parsed from YAML frontmatter.
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct DocumentMeta {
+    pub categories: Vec<String>,
+    pub created: Option<String>,
+    pub updated: Option<String>,
+}
+
 
 /// A heading item for the table of contents.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,9 +70,84 @@ fn highlight_dual_theme(code: &str, lang: &str) -> String {
     out
 }
 
-/// Render Markdown to HTML with syntax highlighting and heading anchors.
-pub fn markdown_to_html(content: &str) -> String {
+/// Strip YAML frontmatter and return the document body only.
+pub fn strip_frontmatter(content: &str) -> String {
+    parse_frontmatter_meta(content).1
+}
+
+/// Parse YAML frontmatter into metadata, returning (meta, body_without_frontmatter).
+fn parse_frontmatter_meta(content: &str) -> (DocumentMeta, String) {
+    let trimmed = content.trim_start();
+    if !trimmed.starts_with("---\n") {
+        return (DocumentMeta::default(), content.to_string());
+    }
+
+    let after_opener = &trimmed[4..];
+    let close_pos = after_opener.find("\n---\n");
+    let (yaml, body) = match close_pos {
+        Some(p) => (&after_opener[..p], after_opener[p + 5..].to_string()),
+        None => return (DocumentMeta::default(), content.to_string()),
+    };
+
+    let mut meta = DocumentMeta::default();
+
+    for line in yaml.lines() {
+        let line = line.trim();
+        if line.is_empty() || line == "---" {
+            continue;
+        }
+        if let Some(colon) = line.find(':') {
+            let key = line[..colon].trim().to_lowercase();
+            let val = line[colon + 1..].trim();
+            match key.as_str() {
+                "categories" | "category" => {
+                    meta.categories = parse_yaml_list(val);
+                }
+                "tags" => {
+                    if meta.categories.is_empty() {
+                        meta.categories = parse_yaml_list(val);
+                    }
+                }
+                "date" | "created" | "create" => {
+                    if meta.created.is_none() {
+                        meta.created = Some(clean_date(val));
+                    }
+                }
+                "updated" | "update" | "lastmod" | "modified" => {
+                    meta.updated = Some(clean_date(val));
+                }
+                _ => {}
+            }
+        }
+    }
+
+    (meta, body)
+}
+
+fn parse_yaml_list(val: &str) -> Vec<String> {
+    let val = val.trim();
+    if val.starts_with('[') && val.ends_with(']') {
+        val[1..val.len() - 1]
+            .split(',')
+            .map(|s| s.trim().trim_matches('"').trim_matches('\'').to_string())
+            .filter(|s| !s.is_empty())
+            .collect()
+    } else if val.starts_with('-') {
+        // Multi-line list (won't be hit since we process line-by-line)
+        vec![val.trim_start_matches('-').trim().to_string()]
+    } else {
+        vec![val.to_string()]
+    }
+}
+
+fn clean_date(s: &str) -> String {
+    s.trim().trim_matches('"').trim_matches('\'').to_string()
+}
+
+/// Render Markdown to HTML with syntax highlighting, returning (html, metadata).
+pub fn markdown_to_html(content: &str) -> (String, DocumentMeta) {
     let content = preprocess_containers(content);
+    let (meta, body) = parse_frontmatter_meta(&content);
 
     let mut opts = ComrakOptions::default();
     opts.extension.table = true;
@@ -81,7 +164,7 @@ pub fn markdown_to_html(content: &str) -> String {
     let mut plugins = Plugins::default();
     plugins.render.codefence_syntax_highlighter = Some(&adapter);
 
-    let html = markdown_to_html_with_plugins(&content, &opts, &plugins);
+    let html = markdown_to_html_with_plugins(&body, &opts, &plugins);
 
     // Post-process: convert single-theme <pre> blocks to dual-theme Shiki style
     let html = convert_to_dual_theme(&html);
@@ -89,7 +172,8 @@ pub fn markdown_to_html(content: &str) -> String {
     // Wrap standalone code blocks + heading anchors
     let html = wrap_code_blocks(&html);
     let html = wrap_tables(&html);
-    add_header_anchors(&html)
+    let html = add_header_anchors(&html);
+    (html, meta)
 }
 
 /// Replace <pre style="background-color:#..."> with dual-theme Shiki-style <pre class="shiki">.
@@ -374,11 +458,15 @@ fn walk_headings<'a>(node: &'a comrak::nodes::AstNode<'a>, items: &mut Vec<TocIt
     let data = node.data.borrow();
     if let comrak::nodes::NodeValue::Heading(heading) = &data.value {
         let level = heading.level as usize;
-        let text = collect_text(node);
-        let slug = text.chars()
-            .filter(|c| c.is_alphanumeric() || c.is_whitespace() || *c == '-' || *c == '_' || *c == '.')
-            .collect::<String>().to_lowercase().trim().replace(' ', "-");
-        items.push(TocItem { level, text, slug });
+        if level == 1 {
+            // skip h1 — usually the document title
+        } else {
+            let text = collect_text(node);
+            let slug = text.chars()
+                .filter(|c| c.is_alphanumeric() || c.is_whitespace() || *c == '-' || *c == '_' || *c == '.')
+                .collect::<String>().to_lowercase().trim().replace(' ', "-");
+            items.push(TocItem { level, text, slug });
+        }
     }
     for child in node.children() { walk_headings(child, items); }
 }
@@ -399,22 +487,23 @@ mod tests {
 
     #[test]
     fn test_markdown_to_html() {
-        let html = markdown_to_html("# Hello\n\nThis is **bold** text.");
+        let (html, meta) = markdown_to_html("# Hello\n\nThis is **bold** text.");
         assert!(html.contains("<h1>") || html.contains("<h1 "));
         assert!(html.contains("<strong>"));
+        assert!(meta.categories.is_empty());
     }
 
     #[test]
     fn test_table_rendering() {
         let md = "| A | B |\n|---|---|\n| 1 | 2 |\n";
-        let html = markdown_to_html(md);
+        let (html, _) = markdown_to_html(md);
         assert!(html.contains("<table>"));
     }
 
     #[test]
     fn test_task_list() {
         let md = "- [ ] Todo\n- [x] Done\n";
-        let html = markdown_to_html(md);
+        let (html, _) = markdown_to_html(md);
         assert!(html.contains("checkbox") || html.contains("checked"));
     }
 
@@ -429,7 +518,7 @@ mod tests {
 
     #[test]
     fn test_header_anchors() {
-        let html = markdown_to_html("## Getting Started\n");
+        let (html, _) = markdown_to_html("## Getting Started\n");
         assert!(html.contains("header-anchor"));
         assert!(html.contains("id=\"getting-started\""));
     }
@@ -437,13 +526,11 @@ mod tests {
     #[test]
     fn test_extract_toc() {
         let toc = extract_toc("# A\n\n## B\n\n### C\n");
-        assert_eq!(toc.len(), 3);
-        assert_eq!(toc[0].level, 1);
-        assert_eq!(toc[0].text, "A");
-        assert_eq!(toc[1].level, 2);
-        assert_eq!(toc[1].text, "B");
-        assert_eq!(toc[2].level, 3);
-        assert_eq!(toc[2].text, "C");
+        assert_eq!(toc.len(), 2);
+        assert_eq!(toc[0].level, 2);
+        assert_eq!(toc[0].text, "B");
+        assert_eq!(toc[1].level, 3);
+        assert_eq!(toc[1].text, "C");
     }
 
     #[test]
@@ -451,5 +538,45 @@ mod tests {
         let md = "# Test\n\n::: info\nInfo box\n:::\n";
         let result = preprocess_containers(md);
         assert!(result.contains("custom-block info"));
+    }
+
+    #[test]
+    fn test_frontmatter_meta() {
+        let md = r#"---
+categories: [rust, tools]
+date: 2024-01-01
+updated: 2024-06-15
+---
+
+# Hello"#;
+        let (_, meta) = markdown_to_html(md);
+        assert_eq!(meta.categories, vec!["rust", "tools"]);
+        assert_eq!(meta.created, Some("2024-01-01".to_string()));
+        assert_eq!(meta.updated, Some("2024-06-15".to_string()));
+    }
+
+    #[test]
+    fn test_frontmatter_meta_tags_fallback() {
+        let md = r#"---
+tags: [cli, markdown]
+date: 2024-01-01
+---
+
+# Hello"#;
+        let (_, meta) = markdown_to_html(md);
+        assert_eq!(meta.categories, vec!["cli", "markdown"]);
+        assert_eq!(meta.created, Some("2024-01-01".to_string()));
+    }
+
+    #[test]
+    fn test_frontmatter_meta_created_fallback() {
+        let md = r#"---
+create: 2024-01-01
+---
+
+# Hello"#;
+        let (_, meta) = markdown_to_html(md);
+        assert_eq!(meta.created, Some("2024-01-01".to_string()));
+        assert!(meta.updated.is_none());
     }
 }

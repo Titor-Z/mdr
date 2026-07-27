@@ -403,7 +403,7 @@ main {
 
 /* 右侧内容区 */
 .content {
-  padding: 4.8rem 3rem 1.8rem;
+  padding: 4.8rem 3rem .5rem;
 }
 
 /* =============================================
@@ -881,6 +881,21 @@ main {
 .content blockquote p {
   margin: 4px 0;
   color: var(--vp-c-text-2);
+}
+
+/* 文档底部状态栏 */
+.doc-footer {
+  margin: .5rem auto 3rem;
+  padding: 12px 3rem;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  font-size: 0.875em;
+  color: var(--vp-c-text-2);
+}
+.doc-footer-item {
+  line-height: 1.6;
 }
 
 /* VitePress 自定义容器 */

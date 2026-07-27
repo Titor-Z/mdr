@@ -2,6 +2,7 @@ use std::time::SystemTime;
 
 use clap::Parser;
 use anyhow::Result;
+use unicode_width::UnicodeWidthStr;
 
 fn term_width() -> usize {
     crossterm::terminal::size()
@@ -31,8 +32,8 @@ fn main() -> Result<()> {
                     let content = std::fs::read_to_string(path)
                         .map_err(|e| anyhow::anyhow!("Failed to read '{}': {}", path, e))?;
                     let tw = term_width();
-                    let rendered = mdr::render::terminal::render_with_width(&content, tw)?;
-                    let links = mdr::render::terminal::extract_links(&rendered);
+                    let rendered = mdr::render::render_with_width(&content, tw)?;
+                    let links = mdr::render::extract_links(&rendered);
                     let config = mdr::tui::app::PagerConfig {
                         show_line_numbers: cli.line_numbers,
                         from_picker: false,
@@ -59,7 +60,7 @@ fn main() -> Result<()> {
                         };
 
                         let tw = term_width();
-                        let rendered = match mdr::render::terminal::render_with_width(&content, tw) {
+                        let rendered = match mdr::render::render_with_width(&content, tw) {
                             Ok(r) => r,
                             Err(e) => {
                                 eprintln!("Error rendering '{}': {}", file_path, e);
@@ -67,7 +68,7 @@ fn main() -> Result<()> {
                             }
                         };
 
-                        let links = mdr::render::terminal::extract_links(&rendered);
+                        let links = mdr::render::extract_links(&rendered);
                         let picker_config = mdr::tui::app::PagerConfig {
                             show_line_numbers: cli.line_numbers,
                             from_picker: true,
@@ -310,11 +311,20 @@ fn pick_markdown_file(state: &mut PickerState) -> Option<String> {
                     // Strip "./" prefix from top-level files
                     let display_path = entry.path.strip_prefix("./").unwrap_or(&entry.path);
 
-                    let display_name = if display_path.len() > card_w.saturating_sub(2) {
-                        format!(
-                            "…{}",
-                            &display_path[display_path.len().saturating_sub(card_w.saturating_sub(3))..]
-                        )
+                    let trunc_w = card_w.saturating_sub(2);
+                    let display_name = if UnicodeWidthStr::width(display_path) > trunc_w {
+                        let max_tail = card_w.saturating_sub(2);
+                        let mut tail_w = 0usize;
+                        let mut trunc_at = display_path.len();
+                        for (i, c) in display_path.char_indices().rev() {
+                            let cw = UnicodeWidthStr::width(c.to_string().as_str());
+                            if tail_w + cw > max_tail {
+                                break;
+                            }
+                            tail_w += cw;
+                            trunc_at = i;
+                        }
+                        format!("…{}", &display_path[trunc_at..])
                     } else {
                         display_path.to_string()
                     };

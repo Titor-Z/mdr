@@ -35,7 +35,7 @@ pub struct PagerConfig {
     /// File path to show in the status bar.
     pub file_path: String,
     /// Link positions in rendered content (for Ctrl+click).
-    pub links: Vec<crate::render::terminal::LinkInfo>,
+    pub links: Vec<crate::render::LinkInfo>,
 }
 
 /// Run the TUI pager with the given content lines.
@@ -112,7 +112,7 @@ struct App {
     /// File path for status bar display.
     file_path: String,
     /// Link positions in the rendered content.
-    links: Vec<crate::render::terminal::LinkInfo>,
+    links: Vec<crate::render::LinkInfo>,
 }
 
 impl App {

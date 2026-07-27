@@ -165,9 +165,17 @@ async fn doc_page(
         Err(e) => return Html(format!("Error reading file: {}", e)),
     };
 
-    let html_content = crate::server::render::markdown_to_html(&content);
-    let toc = crate::server::render::extract_toc(&content);
+    let (html_content, meta) = crate::server::render::markdown_to_html(&content);
+    let body = crate::server::render::strip_frontmatter(&content);
+    let toc = crate::server::render::extract_toc(&body);
     let title = path.rsplit('/').next().unwrap_or(&path).to_string();
+
+    let categories_display = if meta.categories.is_empty() {
+        "暂无".to_string()
+    } else {
+        meta.categories.join(" / ")
+    };
+    let date_display = meta.updated.or(meta.created).unwrap_or_else(|| "暂无".to_string());
 
     let t = state.env.get_template("document.html").unwrap();
     let theme_str = if state.theme.load(Ordering::Relaxed) == 0 {
@@ -183,6 +191,8 @@ async fn doc_page(
             all_docs => &state.docs,
             current_path => path,
             theme => theme_str,
+            categories_display => categories_display,
+            date_display => date_display,
         })
         .unwrap();
     Html(html)
