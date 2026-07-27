@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            binary_name: mdr-linux-x64
+
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            binary_name: mdr-linux-arm64
+            deps: gcc-aarch64-linux-gnu
+
+          - target: x86_64-apple-darwin
+            os: macos-13
+            binary_name: mdr-darwin-x64
+
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            binary_name: mdr-darwin-arm64
+
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            binary_name: mdr-win-x64.exe
+
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+            binary_name: mdr-win-arm64.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation dependencies (Linux ARM64)
+        if: matrix.deps != ''
+        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.deps }}
+
+      - name: Set cross-compiler env (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++" >> $GITHUB_ENV
+          echo "AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Set cross-compiler env (Windows ARM64)
+        if: matrix.target == 'aarch64-pc-windows-msvc'
+        shell: pwsh
+        run: |
+          echo "CARGO_TARGET_AARCH64_PC_WINDOWS_MSVC_LINKER=link.exe" | Out-File -Append $env:GITHUB_ENV
+
+      - name: Build release
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare binary
+        shell: bash
+        run: |
+          src="target/${{ matrix.target }}/release/mdr"
+          if [ -f "${src}.exe" ]; then src="${src}.exe"; fi
+          cp "$src" "target/${{ matrix.binary_name }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: target/${{ matrix.binary_name }}
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: |
+            ## mdr ${{ github.ref_name }}
+
+            从 [GitHub Releases] 下载对应平台的二进制文件，解压后直接运行。
+
+            | 文件 | 平台 |
+            |------|------|
+            | `mdr-darwin-x64` | macOS Intel |
+            | `mdr-darwin-arm64` | macOS Apple Silicon |
+            | `mdr-linux-x64` | Linux x86_64 |
+            | `mdr-linux-arm64` | Linux ARM64 |
+            | `mdr-win-x64.exe` | Windows x86_64 |
+            | `mdr-win-arm64.exe` | Windows ARM64 |
+          files: |
+            artifacts/*/*
+          fail_on_unmatched_files: false

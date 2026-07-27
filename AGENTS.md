@@ -134,6 +134,8 @@
 | 底部菜单栏 | 无背景, ` · ` 分隔, 蓝色 MDR logo | P2 |
 | 日期格式 | 中文月份 "25 7月 2026  17:05" | P2 |
 | 文件选择器状态持久化 | `PickerState` 保留页码/选中/过滤 | P1 |
+| GitHub Actions CI | push/PR 自动编译测试 | P1 |
+| GitHub Actions Release | tag 触发 6 平台二进制发布 | P1 |
 | CI/CD | 18 个单元测试 | P1 |
 | HTTP 服务器 | `mdr serve --port 8080`（axum + minijinja） | P1 |
 | VitePress CSS 变量 | 完整 `--vp-c-*` 体系，暗色/亮色 | P1 |
@@ -152,7 +154,6 @@
 |------|------|--------|
 | 双主题代码高亮 | Shiki 风格 --shiki-light/--shiki-dark | P2 |
 | 配置文件 | `~/.config/mdr/config.toml` | P3 |
-| 双主题代码高亮 | Shiki 风格 --shiki-light/--shiki-dark | P2 |
 | 脚注 / 定义列表 | 额外 Markdown 语法 | P3 |
 | 行跳转 | `:` 进入行号跳转 | P2 |
 | 正则搜索 | 搜索支持正则表达式 | P3 |
@@ -166,7 +167,6 @@
 |------|------|
 | 暗色/亮色主题切换 | 配置文件 + 命令行参数 |
 | 多语言界面 | i18n 支持 |
-| 文件监视 | `notify` 监听文件变更自动重载 |
 | WebSocket 热更新 | HTTP 模式下文件变更自动推送 |
 | brew 发布 | Homebrew formula |
 | crates.io 发布 | `cargo publish` |
