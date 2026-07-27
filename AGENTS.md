@@ -7,6 +7,19 @@
 
 ## 1. Changelog
 
+### v0.2.1 (2026-07-26)
+
+**Bug 修复 + UX 改进**
+
+#### 修复
+- 底部菜单栏非 100% 宽度（Paragraph 缺少 fallback style + 路径截断用字节长度而非显示宽度）
+- 搜索栏非 100% 宽度（同上，未填充余宽）
+- 文件选择器从阅读器返回后状态重置（新增 `PickerState` 持久化 page/selected/filter）
+
+#### 改进
+- 索引页页码显示总分页数（`page 1 / 10`）
+- 索引页底部栏增加翻页快捷键提示（`↑↓ item`、`PgUp/Dn page`、`g/G edge`）
+
 ### v0.2.0 (2026-07-26)
 
 **HTTP 服务器 + SSE 热重载 + 表格渲染 + 段落换行 + 任务列表 + VitePress 风格**
@@ -53,6 +66,7 @@
 - 鼠标捕获开关（`Ctrl+m` 切换）
 - 内容区左右 1 列 padding（不触边、不挡滚动条）
 - 渲染器预留滚动条空间（全局 viewport - 2）
+- 文件选择器状态持久化：从阅读器返回时保留页码、选中项和搜索过滤条件（`PickerState` 结构体，每个 mdr 进程独立）
 
 #### 修复
 - 搜索栏消失（Block 边框占 2 行但状态栏只分配 1 行）
@@ -119,6 +133,7 @@
 | 卡片样式 | 选中蓝色竖线 + 蓝色文字, 未选中仅缩进 | P2 |
 | 底部菜单栏 | 无背景, ` · ` 分隔, 蓝色 MDR logo | P2 |
 | 日期格式 | 中文月份 "25 7月 2026  17:05" | P2 |
+| 文件选择器状态持久化 | `PickerState` 保留页码/选中/过滤 | P1 |
 | CI/CD | 18 个单元测试 | P1 |
 | HTTP 服务器 | `mdr serve --port 8080`（axum + minijinja） | P1 |
 | VitePress CSS 变量 | 完整 `--vp-c-*` 体系，暗色/亮色 | P1 |
@@ -229,6 +244,16 @@ j/↓    down        G/end   go to bottom
 | 分页 | 依赖 less/more | 内置 ratatui pager |
 | 鼠标 | ❌ | ✅ 滚轮/点击/拖拽 |
 | 文件选择器 | 简单列表 | 卡片式 + 翻页 + 过滤 |
+
+### 2026-07-26 — 文件选择器状态持久化
+
+**问题**: 从阅读器返回后，文件选择器重置到第 1 页第 1 条，丢失浏览位置。
+
+**决策**:
+- 新增 `PickerState` 结构体（`page`、`selected`、`filter`），在 `main.rs` 的循环外部创建
+- 每次进入 `pick_markdown_file` 时从 state 恢复，退出时写回
+- 每个 `mdr` 进程有独立的 `PickerState` 实例，互不干扰（进程即隔离边界）
+- `filter` 使用 `std::mem::take` 取出，退出时写回，避免生命周期问题
 
 ---
 
@@ -423,7 +448,80 @@ span.style = new_style;
 
 **教训**: 字符串清理要完整，不能只 trim 部分字符。
 
----
+### 4.18 底部菜单栏非 100% 宽度 — Paragraph 无 fallback style
+
+**问题**: 底部菜单栏（status bar）背景色未填满整行，视觉上缺一截。
+
+**原因**:
+1. `Paragraph` 没有设置 widget-level 的 `style`，Span 未覆盖的单元格使用默认透明背景
+2. 路径截断时插入的 `…`（U+2026，UTF-8 占 3 字节）导致 `display_path.len()` 比实际显示宽度多 2，padding 算少了，余留单元格无 Span 覆盖
+3. `path.len()` 返回字节长度而非显示宽度，使用 `unicode_width::UnicodeWidthStr::width()` 才对
+
+```
+// ❌ 错误 — .len() 返回字节长度，无法处理多字节字符
+let padding = avail - display_path.len() - right_len;
+
+// ✅ 正确 — .width() 返回终端显示宽度
+let padding = avail - display_path.width() - right_len;
+```
+
+```
+// ❌ 错误 — Paragraph 无 fallback style，无 span 覆盖的单元格透明
+let status_bar = Paragraph::new(Line::from(...));
+
+// ✅ 正确 — fallback style 保证整行都有背景色
+let status_bar = Paragraph::new(Line::from(...)).style(normal_style);
+```
+
+**修复**:
+- `Paragraph::style(normal_style)` 作为 fallback，Span 未覆盖的单元格也有深色背景
+- 所有长度计算统一用 `UnicodeWidthStr::width()` 替代 `str::len()`
+- 路径截断改用 `chars().rev().take()` 安全切片，避免 UTF-8 字节切片 panic
+- 搜索栏同样加 style fallback + padding 保证宽度
+
+**教训**: ratatui 中 `Paragraph` 的背景色不仅来自 Span，还需要 `Paragraph::style()` 作为 fallback。涉及文本排版时始终用 `unicode-width` 计算显示宽度。
+
+### 4.19 文件选择器状态丢失 — 独立函数无持久化
+
+**问题**: 从阅读器返回后文件选择器重置到第 1 页第 1 条。
+
+**原因**: `pick_markdown_file()` 是独立函数，每次调用创建新的局部变量 `page=0, selected=0, filter=""`，无法在循环间保持状态。
+
+```
+// ❌ 错误 — 每次调用状态清零
+fn pick_markdown_file() -> Option<String> {
+    let mut page = 0usize;
+    let mut selected = 0usize;
+    let mut filter = String::new();
+    // ...
+}
+
+// ✅ 正确 — 外部持久化 PickerState
+struct PickerState {
+    page: usize,
+    selected: usize,
+    filter: String,
+}
+
+fn pick_markdown_file(state: &mut PickerState) -> Option<String> {
+    // 从 state 恢复
+    let mut filter = std::mem::take(&mut state.filter);
+    let mut selected = state.selected;
+    let mut page = state.page;
+    // ... 使用本地变量 ...
+    // 退出时写回
+    state.page = page;
+    state.selected = selected;
+    state.filter = filter;
+}
+```
+
+**修复**:
+- 新增 `PickerState` 结构体，在 `main.rs` 的 `None => { ... }` 分支中创建（在 `loop` 外面）
+- 将 `&mut PickerState` 传入 `pick_markdown_file()`，函数内用 `std::mem::take` 取出 filter，退出时写回
+- 每个 mdr 进程有独立的 `PickerState`，天然互不干扰
+
+**教训**: 独立函数 + 循环重入的场景，状态必须外提。Rust 的所有权模型恰好保证每个进程的 state 私有——不需要全局变量或文件锁。
 
 ## 5. 编码规范
 

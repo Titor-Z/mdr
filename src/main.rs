@@ -42,42 +42,45 @@ fn main() -> Result<()> {
                     mdr::tui::app::run_with(rendered, config);
                     Ok(())
                 }
-                None => loop {
-                    let file_path = match pick_markdown_file() {
-                        Some(p) => p,
-                        None => break Ok(()),
-                    };
+                None => {
+                    let mut picker_state = PickerState::default();
+                    loop {
+                        let file_path = match pick_markdown_file(&mut picker_state) {
+                            Some(p) => p,
+                            None => break Ok(()),
+                        };
 
-                    let content = match std::fs::read_to_string(&file_path) {
-                        Ok(c) => c,
-                        Err(e) => {
-                            eprintln!("Error reading '{}': {}", file_path, e);
-                            continue;
+                        let content = match std::fs::read_to_string(&file_path) {
+                            Ok(c) => c,
+                            Err(e) => {
+                                eprintln!("Error reading '{}': {}", file_path, e);
+                                continue;
+                            }
+                        };
+
+                        let tw = term_width();
+                        let rendered = match mdr::render::terminal::render_with_width(&content, tw) {
+                            Ok(r) => r,
+                            Err(e) => {
+                                eprintln!("Error rendering '{}': {}", file_path, e);
+                                continue;
+                            }
+                        };
+
+                        let links = mdr::render::terminal::extract_links(&rendered);
+                        let picker_config = mdr::tui::app::PagerConfig {
+                            show_line_numbers: cli.line_numbers,
+                            from_picker: true,
+                            file_path: file_path.clone(),
+                            links,
+                        };
+
+                        match mdr::tui::app::run_with(rendered, picker_config) {
+                            mdr::tui::app::PagerExit::GoBack => continue,
+                            mdr::tui::app::PagerExit::Quit => break Ok(()),
                         }
-                    };
-
-                    let tw = term_width();
-                    let rendered = match mdr::render::terminal::render_with_width(&content, tw) {
-                        Ok(r) => r,
-                        Err(e) => {
-                            eprintln!("Error rendering '{}': {}", file_path, e);
-                            continue;
-                        }
-                    };
-
-                    let links = mdr::render::terminal::extract_links(&rendered);
-                    let picker_config = mdr::tui::app::PagerConfig {
-                        show_line_numbers: cli.line_numbers,
-                        from_picker: true,
-                        file_path: file_path.clone(),
-                        links,
-                    };
-
-                    match mdr::tui::app::run_with(rendered, picker_config) {
-                        mdr::tui::app::PagerExit::GoBack => continue,
-                        mdr::tui::app::PagerExit::Quit => break Ok(()),
                     }
-                },
+                }
             }
         }
     }
@@ -173,7 +176,25 @@ fn collect_files(dir: &str) -> Vec<FileInfo> {
 
 // ── TUI file picker ─────────────────────────────────────────────────
 
-fn pick_markdown_file() -> Option<String> {
+/// 文件选择器状态，在阅读→返回循环中持久化。
+/// 每次 mdr 进程有自己的实例，互不干扰。
+struct PickerState {
+    page: usize,
+    selected: usize,
+    filter: String,
+}
+
+impl Default for PickerState {
+    fn default() -> Self {
+        Self {
+            page: 0,
+            selected: 0,
+            filter: String::new(),
+        }
+    }
+}
+
+fn pick_markdown_file(state: &mut PickerState) -> Option<String> {
     use crossterm::event::{self, Event, KeyCode, KeyEventKind};
     use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
     use crossterm::ExecutableCommand;
@@ -195,9 +216,10 @@ fn pick_markdown_file() -> Option<String> {
     stdout.execute(EnterAlternateScreen).ok()?;
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout)).ok()?;
 
-    let mut filter = String::new();
-    let mut selected = 0usize;
-    let mut page = 0usize;
+    // 从持久化状态恢复
+    let mut filter = std::mem::take(&mut state.filter);
+    let mut selected = state.selected;
+    let mut page = state.page;
     const CARD_ROWS: u16 = 3; // name row + date row + gap
 
     let pick_result: Option<String> = 'outer: loop {
@@ -252,7 +274,7 @@ fn pick_markdown_file() -> Option<String> {
 
                 // Row 3: document count + page info
                 let page_str = if total_pages > 1 {
-                    format!(" · page {}", page + 1)
+                    format!(" · page {} / {}", page + 1, total_pages)
                 } else {
                     String::new()
                 };
@@ -342,6 +364,9 @@ fn pick_markdown_file() -> Option<String> {
 
                 items.push("→ open".to_string());
                 items.push("← back".to_string());
+                items.push("↑↓ item".to_string());
+                items.push("PgUp/Dn page".to_string());
+                items.push("g/G edge".to_string());
                 items.push("q quit".to_string());
 
                 let mut spans: Vec<Span<'static>> = Vec::new();
@@ -458,6 +483,11 @@ fn pick_markdown_file() -> Option<String> {
             }
         }
     };
+
+    // 写回持久化状态（下次返回时恢复）
+    state.page = page;
+    state.selected = selected;
+    state.filter = filter;
 
     disable_raw_mode().ok()?;
     terminal.backend_mut().execute(LeaveAlternateScreen).ok()?;

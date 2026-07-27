@@ -8,6 +8,7 @@ use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScree
 use crossterm::ExecutableCommand;
 use ratatui::backend::CrosstermBackend;
 use ratatui::layout::{Constraint, Layout, Rect};
+use unicode_width::UnicodeWidthStr;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState};
@@ -566,15 +567,18 @@ impl App {
 
         // Pad the middle so right side is right-aligned
         let avail = area.width.saturating_sub(7) as usize; // " MDR " + "  "
-        let right_len = right.len();
+        let right_len = right.width();
         let path_max = avail.saturating_sub(right_len + 2);
-        let display_path = if path.len() > path_max {
-            format!("…{}", &path[path.len().saturating_sub(path_max.saturating_sub(1))..])
+        let display_path = if path.width() > path_max {
+            // Truncate path to fit, prepend ellipsis
+            let keep = path_max.saturating_sub(1);
+            let truncated: String = path.chars().rev().take(keep).collect::<Vec<_>>().into_iter().rev().collect();
+            format!("…{}", truncated)
         } else {
             path
         };
 
-        let padding = avail.saturating_sub(display_path.len() + right_len);
+        let padding = avail.saturating_sub(display_path.width() + right_len);
         let status = format!("{}{}{}", display_path, " ".repeat(padding), right);
 
         let logo_style = Style::default()
@@ -585,10 +589,13 @@ impl App {
             .fg(Color::Rgb(180, 180, 190))
             .bg(Color::Rgb(30, 30, 40));
 
+        // Use normal_style as paragraph fallback so unfilled cells
+        // still get the dark background, making the bar span 100% width.
         let status_bar = Paragraph::new(Line::from(vec![
             Span::styled(" MDR ", logo_style),
             Span::styled(format!("  {}", status), normal_style),
-        ]));
+        ]))
+        .style(normal_style);
         frame.render_widget(status_bar, area);
     }
 
@@ -662,11 +669,16 @@ impl App {
             .bg(Color::Rgb(30, 30, 40))
             .add_modifier(Modifier::BOLD);
 
-        let search_bar = Paragraph::new(Line::from(Span::styled(text, search_style)));
+        // Pad to fill full width so background spans entire bar
+        let padding = area.width.saturating_sub(text.width() as u16).saturating_sub(1);
+        let padded = format!("{} {}", text, " ".repeat(padding as usize));
+
+        let search_bar = Paragraph::new(Line::from(Span::styled(padded, search_style)))
+            .style(search_style);
 
         frame.render_widget(search_bar, area);
 
-        let cursor_x = 1 + query.len() as u16;
+        let cursor_x = 1 + query.width() as u16;
         frame.set_cursor_position((area.x + cursor_x, area.y));
     }
 }
